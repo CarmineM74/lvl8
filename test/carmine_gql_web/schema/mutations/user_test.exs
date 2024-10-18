@@ -42,6 +42,23 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
       assert data["createUser"]["preferences"]["likesFaxes"] === false
     end
 
+    @tag :wip
+    test "fail if email has already been taken" do
+      assert {:ok, user} = create_user()
+
+      assert {:ok, %{errors: errors}} =
+               Absinthe.run(@create_user_test_doc, Schema,
+                 variables: %{
+                   "name" => "Imposter",
+                   "email" => user.email
+                 }
+               )
+
+      conflict = Enum.find(errors, &(&1.code === :conflict))
+      assert conflict
+      assert %{details: %{email: _email_error}} = conflict
+    end
+
     test "Supplying invalid data to createUser returns an error" do
       assert {:ok, %{errors: _errors}} =
                Absinthe.run(@create_user_test_doc, Schema,

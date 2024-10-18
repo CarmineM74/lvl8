@@ -1,6 +1,7 @@
 defmodule CarmineGqlWeb.Schema do
   use Absinthe.Schema
   alias CarmineGql.Repo
+  alias CarmineGqlWeb.Schema.Middlewares
 
   import_types CarmineGqlWeb.Types.Preferences
   import_types CarmineGqlWeb.Types.User
@@ -33,4 +34,10 @@ defmodule CarmineGqlWeb.Schema do
   def plugins do
     [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
   end
+
+  def middleware(middlewares, _field, %{identifier: identifier}) when identifier == :mutation do
+    middlewares ++ [Middlewares.ChangesetErrors]
+  end
+
+  def middleware(middlewares, _field, _opts), do: middlewares
 end

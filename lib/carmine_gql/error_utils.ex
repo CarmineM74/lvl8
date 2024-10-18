@@ -17,6 +17,7 @@ defmodule CarmineGql.ErrorUtils do
 
   defp create_error(code, message, nil), do: %{message: message, code: code}
 
-  defp create_error(code, message, details),
-    do: %{message: message, code: code, details: details}
+  defp create_error(code, message, details) do
+    %{message: message, code: code, details: details}
+  end
 end

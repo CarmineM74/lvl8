@@ -27,8 +27,8 @@ defmodule CarmineGql.Accounts do
     params = maybe_set_default_preferences(params)
 
     case Actions.create(User, params) do
-      {:error, %Ecto.Changeset{}} ->
-        {:error, :invalid_create_data}
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:error, changeset}
 
       {:ok, user} ->
         {:ok, user}

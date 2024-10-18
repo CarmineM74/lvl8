@@ -41,7 +41,6 @@ defmodule CarmineGqlWeb.Schema.Queries.UserTest do
       assert data["user"]["id"] === to_string(user.id)
     end
 
-    @tag :wip
     test "returns errors if no user is found" do
       assert {:ok, %{data: data, errors: errors}} =
                Absinthe.run(@user_test_doc, Schema,
