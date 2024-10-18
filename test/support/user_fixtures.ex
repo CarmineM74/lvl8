@@ -2,9 +2,11 @@ defmodule CarmineGql.Support.UserFixtures do
   alias CarmineGql.Accounts
 
   def create_user(params \\ %{}) do
+    random_suffix = :crypto.strong_rand_bytes(8) |> Base.url_encode64()
+
     default_params = %{
       name: "Test user",
-      email: "test@user.me",
+      email: "test_#{random_suffix}@user.me",
       preferences: %{
         likes_emails: true,
         likes_faxes: false,

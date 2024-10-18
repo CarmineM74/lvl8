@@ -10,10 +10,16 @@ defmodule CarmineGqlWeb.Schema.Middlewares.ChangesetErrors do
 
   defp handle_error(%Ecto.Changeset{action: action} = changeset)
        when action in [:insert, :update] do
-    ErrorUtils.conflict("conflict on insert or update", traverse_errors(changeset))
+    error_details = traverse_errors(changeset)
+
+    if Map.has_key?(error_details, :email) do
+      ErrorUtils.conflict("email conflict on #{action}", error_details)
+    else
+      ErrorUtils.bad_request("bad request", error_details)
+    end
   end
 
-  defp handle_error(error), do: [error]
+  defp handle_error(error), do: error
 
   defp traverse_errors(changeset) do
     Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->

@@ -49,7 +49,6 @@ defmodule CarmineGqlWeb.Schema.Queries.UserTest do
                  }
                )
 
-      IO.inspect(errors)
       refute data["user"]
       error = Enum.find(errors, nil, &(&1.code === :not_found))
       assert error

@@ -18,6 +18,7 @@ defmodule CarmineGql.Accounts.User do
     |> validate_required([:name, :email])
     |> cast_assoc(:preferences)
     |> unique_constraint(:email)
+    |> validate_format(:email, ~r/@/)
   end
 
   def with_preferences(), do: from(u in User, join: p in assoc(u, :preferences))

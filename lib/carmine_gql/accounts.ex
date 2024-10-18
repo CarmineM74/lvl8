@@ -22,7 +22,6 @@ defmodule CarmineGql.Accounts do
     {:ok, users}
   end
 
-  @spec create_user(map()) :: {:ok, User.t()} | {:error, :invalid_create_data}
   def create_user(params \\ %{}) do
     params = maybe_set_default_preferences(params)
 
@@ -47,15 +46,13 @@ defmodule CarmineGql.Accounts do
     Map.put(attrs, :preferences, preferences)
   end
 
-  @spec update_user(map()) ::
-          {:ok, User.t()} | {:error, :not_found} | {:error, :invalid_update_data}
   def update_user(id, params \\ %{}) do
     case Actions.update(User, id, params) do
-      {:error, %Ecto.Changeset{}} ->
-        {:error, :invalid_update_data}
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:error, changeset}
 
-      {:error, %ErrorMessage{code: :not_found}} ->
-        {:error, :not_found}
+      {:error, %ErrorMessage{} = error_message} ->
+        {:error, ErrorMessage.to_jsonable_map(error_message)}
 
       {:ok, user} ->
         {:ok, user}

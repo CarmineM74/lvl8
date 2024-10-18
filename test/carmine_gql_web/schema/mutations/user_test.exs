@@ -42,7 +42,6 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
       assert data["createUser"]["preferences"]["likesFaxes"] === false
     end
 
-    @tag :wip
     test "fail if email has already been taken" do
       assert {:ok, user} = create_user()
 
@@ -59,13 +58,16 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
       assert %{details: %{email: _email_error}} = conflict
     end
 
+    @tag :wip
     test "Supplying invalid data to createUser returns an error" do
-      assert {:ok, %{errors: _errors}} =
+      assert {:ok, %{errors: errors}} =
                Absinthe.run(@create_user_test_doc, Schema,
                  variables: %{
                    "name" => "Imposter"
                  }
                )
+
+      IO.inspect(errors)
     end
 
     test "Creating an user increases create_user's hit count" do
@@ -122,14 +124,17 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
                )
     end
 
-    test "Update fails when no user is found with given id" do
-      assert {:ok, %{errors: _errors}} =
+    test "fails when no user is found with given id" do
+      assert {:ok, %{errors: errors}} =
                Absinthe.run(@update_user_test_doc, Schema,
                  variables: %{
                    "id" => "0",
                    "name" => "Walter White"
                  }
                )
+
+      not_found = Enum.find(errors, &(&1.code === :not_found))
+      assert not_found
     end
 
     test "Updating an user increases update_user's hit count" do
@@ -174,13 +179,16 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
     end
 
     test "User preferences update fails when user is not found" do
-      assert {:ok, %{errors: _errors}} =
+      assert {:ok, %{errors: errors}} =
                Absinthe.run(@update_user_preferences_test_doc, Schema,
                  variables: %{
                    "userId" => "0",
                    "likesEmails" => false
                  }
                )
+
+      not_found = Enum.find(errors, &(&1.code === :not_found))
+      assert not_found
     end
 
     test "User preferences update fails when invalid data is supplied" do

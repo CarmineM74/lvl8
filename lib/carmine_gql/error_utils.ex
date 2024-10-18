@@ -15,6 +15,10 @@ defmodule CarmineGql.ErrorUtils do
     create_error(:conflict, message, details)
   end
 
+  def bad_request(message \\ "bad request", details \\ nil) do
+    create_error(:bad_request, message, details)
+  end
+
   defp create_error(code, message, nil), do: %{message: message, code: code}
 
   defp create_error(code, message, details) do
