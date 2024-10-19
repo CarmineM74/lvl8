@@ -3,6 +3,7 @@ defmodule CarmineGqlWeb.Router do
 
   pipeline :api do
     plug(:accepts, ["json"])
+    plug(CarmineGqlWeb.AuthPlug)
   end
 
   scope "/" do
