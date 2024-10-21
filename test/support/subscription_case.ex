@@ -9,7 +9,9 @@ defmodule CarmineGqlWeb.SubscriptionCase do
         schema: CarmineGqlWeb.Schema
 
       setup do
-        {:ok, socket} = Phoenix.ChannelTest.connect(CarmineGqlWeb.UserSocket, %{})
+        {:ok, socket} =
+          Phoenix.ChannelTest.connect(CarmineGqlWeb.UserSocket, %{})
+
         {:ok, socket} = Absinthe.Phoenix.SubscriptionTest.join_absinthe(socket)
         {:ok, %{socket: socket}}
       end

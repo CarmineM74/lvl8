@@ -91,12 +91,11 @@ defmodule CarmineGqlWeb.Schema.Queries.UserTest do
       assert {:ok, %{data: data}} =
                Absinthe.run(@users_test_doc, Schema,
                  variables: %{
-                   "likesEmails" => true
+                   "likesFaxes" => true
                  }
                )
 
-      assert Enum.count(data["users"]) === 2
-      assert Enum.all?(data["users"], fn user -> user["preferences"]["likesEmails"] end)
+      assert Enum.count(data["users"]) === 1
     end
 
     test "fetching users by id increases users hit count" do

@@ -41,14 +41,30 @@ defmodule CarmineGql.Schema.Subscriptions.UserTest do
     }
   """
   describe "@createdUser" do
+    test "fails when socket has not been authenticated", %{socket: socket} do
+      ref = push_doc(socket, @created_user_test_doc)
+      assert_reply(ref, :ok, %{subscriptionId: _subscription_id})
+
+      ref =
+        push_doc(socket, @create_user_test_doc,
+          variables: %{
+            "name" => "Observed",
+            "email" => "theyrwatching@me.com"
+          }
+        )
+
+      assert_reply(ref, :ok, reply)
+
+      assert %{data: %{"createUser" => nil}, errors: errors} = reply
+      auth_error = Enum.find(errors, &(&1.message === "authentication failed"))
+      assert auth_error
+    end
+
     test "Returns an user when @createUser is mutation is triggered", %{socket: socket} do
+      socket = authenticate_socket(socket)
       ref = push_doc(socket, @created_user_test_doc)
       assert_reply(ref, :ok, %{subscriptionId: subscription_id})
 
-      # Question for Mika:
-      # Shouldn't test focus on one single aspect?
-      # Is testing that the pushed mutation actually returns
-      # the correct data really necessary here?
       ref =
         push_doc(socket, @create_user_test_doc,
           variables: %{
@@ -109,12 +125,38 @@ defmodule CarmineGql.Schema.Subscriptions.UserTest do
     }
   """
   describe "@updatedUserPreferences" do
+    @tag :wip
+    test "fails when socket has not been authenticated", %{socket: socket} do
+      ref =
+        push_doc(socket, @updated_user_preferences_test_doc, %{
+          variables: %{"userId" => "0"}
+        })
+
+      assert_reply(ref, :ok, %{subscriptionId: _subscription_id})
+
+      ref =
+        push_doc(socket, @update_user_preferences_test_doc,
+          variables: %{
+            "userId" => "0",
+            "likesFaxes" => false
+          }
+        )
+
+      assert_reply(ref, :ok, reply)
+
+      assert %{data: %{"updateUserPreferences" => nil}, errors: errors} = reply
+      auth_error = Enum.find(errors, &(&1.message === "authentication failed"))
+      assert auth_error
+    end
+
     test "Returns user's preferences when @updateUserPreferences mutation is triggered", %{
       socket: socket
     } do
       {:ok, user} = create_user(%{preferences: %{likes_faxes: true}})
 
       user_id = to_string(user.id)
+
+      socket = authenticate_socket(socket)
 
       ref =
         push_doc(socket, @updated_user_preferences_test_doc, %{
@@ -146,5 +188,15 @@ defmodule CarmineGql.Schema.Subscriptions.UserTest do
                }
              } = data
     end
+  end
+
+  defp authenticate_socket(socket, token \\ "Imsecret") do
+    socket =
+      Absinthe.Phoenix.Socket.put_options(socket,
+        context: %{auth_token: token, pubsub: CarmineGqlWeb.Endpoint}
+      )
+
+    {:ok, socket} = Absinthe.Phoenix.SubscriptionTest.join_absinthe(socket)
+    socket
   end
 end

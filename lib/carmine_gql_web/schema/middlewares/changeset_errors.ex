@@ -1,6 +1,5 @@
 defmodule CarmineGqlWeb.Schema.Middlewares.ChangesetErrors do
   @behaviour Absinthe.Middleware
-  require Logger
   alias CarmineGql.ErrorUtils
 
   def call(resolution, _opts) do
