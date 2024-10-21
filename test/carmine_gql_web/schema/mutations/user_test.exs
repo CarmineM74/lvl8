@@ -37,8 +37,10 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
                )
 
       assert errors
-      auth_error = Enum.find(errors, &(&1.message === "authentication failed"))
+      [auth_error] = errors
       assert auth_error
+      assert auth_error.code === :internal_server_error
+      assert auth_error.message === "authentication failed"
     end
 
     test "fails if token is not valid" do
@@ -52,8 +54,10 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
                )
 
       assert errors
-      auth_error = Enum.find(errors, &(&1.message === "could not perform authentication"))
+      [auth_error] = errors
       assert auth_error
+      assert auth_error.code === :internal_server_error
+      assert auth_error.message === "authentication failed"
     end
 
     test "Successfully creates an user with default preferences" do
@@ -145,8 +149,10 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
                )
 
       assert errors
-      auth_error = Enum.find(errors, &(&1.message === "authentication failed"))
+      [auth_error] = errors
       assert auth_error
+      assert auth_error.code === :internal_server_error
+      assert auth_error.message === "authentication failed"
     end
 
     test "fails if token is not valid" do
@@ -162,8 +168,10 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
                )
 
       assert errors
-      auth_error = Enum.find(errors, &(&1.message === "could not perform authentication"))
+      [auth_error] = errors
       assert auth_error
+      assert auth_error.code === :internal_server_error
+      assert auth_error.message === "authentication failed"
     end
 
     test "Updates user successfully" do
@@ -245,8 +253,10 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
                )
 
       assert errors
-      auth_error = Enum.find(errors, &(&1.message === "authentication failed"))
+      [auth_error] = errors
       assert auth_error
+      assert auth_error.code === :internal_server_error
+      assert auth_error.message === "authentication failed"
     end
 
     test "fails if a wrong token is provided" do
@@ -262,8 +272,10 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
                )
 
       assert errors
-      auth_error = Enum.find(errors, &(&1.message === "could not perform authentication"))
+      [auth_error] = errors
       assert auth_error
+      assert auth_error.code === :internal_server_error
+      assert auth_error.message === "authentication failed"
     end
 
     test "Updates user preferences successfully" do

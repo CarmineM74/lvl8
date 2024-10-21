@@ -10,7 +10,7 @@ defmodule CarmineGqlWeb.Schema.Middlewares.Auth do
       _wrong_or_nil_token ->
         Absinthe.Resolution.put_result(
           resolution,
-          {:error, ErrorUtils.internal_server_error("could not perform authentication")}
+          {:error, ErrorUtils.internal_server_error("authentication failed")}
         )
     end
   end
