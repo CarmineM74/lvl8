@@ -41,6 +41,21 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
       assert auth_error
     end
 
+    test "fails if token is not valid" do
+      assert {:ok, %{errors: errors}} =
+               Absinthe.run(@create_user_test_doc, Schema,
+                 context: %{auth_token: "wrong_secret"},
+                 variables: %{
+                   "name" => "TryMe",
+                   "email" => "meh@me.com"
+                 }
+               )
+
+      assert errors
+      auth_error = Enum.find(errors, &(&1.message === "could not perform authentication"))
+      assert auth_error
+    end
+
     test "Successfully creates an user with default preferences" do
       assert {:ok, %{data: data}} =
                Absinthe.run(@create_user_test_doc, Schema,
@@ -134,6 +149,23 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
       assert auth_error
     end
 
+    test "fails if token is not valid" do
+      assert {:ok, user} = create_user()
+
+      assert {:ok, %{errors: errors}} =
+               Absinthe.run(@update_user_test_doc, Schema,
+                 context: %{auth_token: "wrong_secret"},
+                 variables: %{
+                   "id" => to_string(user.id),
+                   "name" => "TryMe"
+                 }
+               )
+
+      assert errors
+      auth_error = Enum.find(errors, &(&1.message === "could not perform authentication"))
+      assert auth_error
+    end
+
     test "Updates user successfully" do
       assert {:ok, user} = create_user()
 
@@ -214,6 +246,23 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
 
       assert errors
       auth_error = Enum.find(errors, &(&1.message === "authentication failed"))
+      assert auth_error
+    end
+
+    test "fails if a wrong token is provided" do
+      assert {:ok, user} = create_user()
+
+      assert {:ok, %{errors: errors}} =
+               Absinthe.run(@update_user_preferences_test_doc, Schema,
+                 context: %{auth_token: "wrong_secret"},
+                 variables: %{
+                   "userId" => to_string(user.id),
+                   "name" => "TryMe"
+                 }
+               )
+
+      assert errors
+      auth_error = Enum.find(errors, &(&1.message === "could not perform authentication"))
       assert auth_error
     end
 

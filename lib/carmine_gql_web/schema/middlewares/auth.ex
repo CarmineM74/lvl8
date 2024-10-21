@@ -1,6 +1,5 @@
 defmodule CarmineGqlWeb.Schema.Middlewares.Auth do
   @behaviour Absinthe.Middleware
-  require Logger
   alias CarmineGql.ErrorUtils
 
   def call(%{context: %{auth_token: token}} = resolution, opts) do
@@ -8,22 +7,10 @@ defmodule CarmineGqlWeb.Schema.Middlewares.Auth do
       ^token ->
         resolution
 
-      nil ->
+      _wrong_or_nil_token ->
         Absinthe.Resolution.put_result(
           resolution,
-          {:error,
-           ErrorUtils.internal_server_error(
-             "could not perform authentication on a protected resource"
-           )}
-        )
-
-      _wrong_secret ->
-        Absinthe.Resolution.put_result(
-          resolution,
-          {:error,
-           ErrorUtils.internal_server_error(
-             "could not perform authentication on a protected resource"
-           )}
+          {:error, ErrorUtils.internal_server_error("could not perform authentication")}
         )
     end
   end

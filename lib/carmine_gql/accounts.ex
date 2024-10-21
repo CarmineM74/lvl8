@@ -66,6 +66,12 @@ defmodule CarmineGql.Accounts do
          {:ok, updated_preferences} <-
            Actions.update(Preference, user.preferences.id, preferences) do
       {:ok, updated_preferences}
+    else
+      {:error, %ErrorMessage{} = error_message} ->
+        {:error, ErrorMessage.to_jsonable_map(error_message)}
+
+      {:error, error} ->
+        {:error, error}
     end
   end
 end
