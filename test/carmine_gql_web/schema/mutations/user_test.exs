@@ -241,9 +241,12 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
   }
   """
   describe "@updateUserPreferences" do
-    test "fails if no authentication is provided" do
-      assert {:ok, user} = create_user()
+    setup do
+      {:ok, user} = create_user()
+      %{user: user}
+    end
 
+    test "fails if no authentication is provided", %{user: user} do
       assert {:ok, %{errors: errors}} =
                Absinthe.run(@update_user_preferences_test_doc, Schema,
                  variables: %{
@@ -259,9 +262,7 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
       assert auth_error.message === "authentication failed"
     end
 
-    test "fails if a wrong token is provided" do
-      assert {:ok, user} = create_user()
-
+    test "fails if a wrong token is provided", %{user: user} do
       assert {:ok, %{errors: errors}} =
                Absinthe.run(@update_user_preferences_test_doc, Schema,
                  context: %{auth_token: "wrong_secret"},
@@ -278,9 +279,7 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
       assert auth_error.message === "authentication failed"
     end
 
-    test "Updates user preferences successfully" do
-      assert {:ok, user} = create_user()
-
+    test "Updates user preferences successfully", %{user: user} do
       assert {:ok, %{data: data}} =
                Absinthe.run(@update_user_preferences_test_doc, Schema,
                  context: %{auth_token: "Imsecret"},
@@ -307,9 +306,7 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
       assert not_found
     end
 
-    test "User preferences update fails when invalid data is supplied" do
-      assert {:ok, user} = create_user()
-
+    test "User preferences update fails when invalid data is supplied", %{user: user} do
       assert {:ok, %{errors: _errors}} =
                Absinthe.run(@update_user_preferences_test_doc, Schema,
                  context: %{auth_token: "Imsecret"},
@@ -320,9 +317,8 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
                )
     end
 
-    test "Updating user preferences increases update_user's hit count" do
+    test "Updating user preferences increases update_user's hit count", %{user: user} do
       assert 0 === Stats.get_hit_counter("update_user_preferences")
-      assert {:ok, user} = create_user()
 
       assert {:ok, %{data: _data}} =
                Absinthe.run(@update_user_preferences_test_doc, Schema,
