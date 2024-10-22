@@ -5,7 +5,6 @@ defmodule CarmineGql.Accounts do
   alias EctoShorts.Actions
   alias CarmineGql.ErrorUtils
 
-  @spec user_by_id(integer) :: {:ok, User.t()} | {:error, :not_found}
   def user_by_id(id) do
     case Actions.get(User, id) do
       nil ->
@@ -16,7 +15,6 @@ defmodule CarmineGql.Accounts do
     end
   end
 
-  @spec user_by_preferences(map()) :: {:ok, list(User.t())}
   def user_by_preferences(preferences \\ %{}) do
     users = Actions.all(User.filter_by_preferences(preferences))
     {:ok, users}
@@ -59,7 +57,6 @@ defmodule CarmineGql.Accounts do
     end
   end
 
-  @spec update_user_preferences(integer, map()) :: {:ok, Preference.t()} | {:error, :not_found}
   def update_user_preferences(id, %{} = preferences) do
     with {:ok, user} <- user_by_id(id),
          user <- Repo.preload(user, :preferences),

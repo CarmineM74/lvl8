@@ -5,7 +5,7 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
   alias CarmineGql.GqlRequestStats, as: Stats
 
   import CarmineGql.Support.UserFixtures
-  import CarmineGql.Test.Support
+  import CarmineGql.Test.Support, only: [test_failure_with_error: 2]
 
   setup do
     {:ok, _pid} = CarmineGql.GqlRequestStats.start_link(name: nil)
