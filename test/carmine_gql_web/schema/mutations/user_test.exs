@@ -5,6 +5,7 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
   alias CarmineGql.GqlRequestStats, as: Stats
 
   import CarmineGql.Support.UserFixtures
+  import CarmineGql.Test.Support
 
   setup do
     {:ok, _pid} = CarmineGql.GqlRequestStats.start_link(name: nil)
@@ -28,36 +29,31 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
   """
   describe "@createUser" do
     test "fails if no authentication is provided" do
-      assert {:ok, %{errors: errors}} =
-               Absinthe.run(@create_user_test_doc, Schema,
-                 variables: %{
-                   "name" => "TryMe",
-                   "email" => "meh@me.com"
-                 }
-               )
+      variables = %{
+        "name" => "TryMe",
+        "email" => "meh@me.com"
+      }
 
-      assert errors
-      [auth_error] = errors
-      assert auth_error
-      assert auth_error.code === :internal_server_error
-      assert auth_error.message === "authentication failed"
+      test_failure_with_error(@create_user_test_doc,
+        error_message: "authentication failed",
+        variables: variables
+      )
     end
 
     test "fails if token is not valid" do
-      assert {:ok, %{errors: errors}} =
-               Absinthe.run(@create_user_test_doc, Schema,
-                 context: %{auth_token: "wrong_secret"},
-                 variables: %{
-                   "name" => "TryMe",
-                   "email" => "meh@me.com"
-                 }
-               )
+      context = %{auth_token: "wrong_secret"}
 
-      assert errors
-      [auth_error] = errors
-      assert auth_error
-      assert auth_error.code === :internal_server_error
-      assert auth_error.message === "authentication failed"
+      variables = %{
+        "name" => "TryMe",
+        "email" => "meh@me.com"
+      }
+
+      test_failure_with_error(
+        @create_user_test_doc,
+        error_message: "authentication failed",
+        context: context,
+        variables: variables
+      )
     end
 
     test "Successfully creates an user with default preferences" do
@@ -78,19 +74,20 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
 
     test "fail if email has already been taken" do
       assert {:ok, user} = create_user()
+      context = %{auth_token: "Imsecret"}
 
-      assert {:ok, %{errors: errors}} =
-               Absinthe.run(@create_user_test_doc, Schema,
-                 context: %{auth_token: "Imsecret"},
-                 variables: %{
-                   "name" => "Imposter",
-                   "email" => user.email
-                 }
-               )
+      variables = %{
+        "name" => "TryMe",
+        "email" => user.email
+      }
 
-      conflict = Enum.find(errors, &(&1.code === :conflict))
-      assert conflict
-      assert %{details: %{email: _email_error}} = conflict
+      test_failure_with_error(
+        @create_user_test_doc,
+        error_message: "email conflict on insert",
+        error_code: :conflict,
+        context: context,
+        variables: variables
+      )
     end
 
     test "Supplying invalid data to createUser returns an error" do
@@ -140,38 +137,34 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
     test "fails if no authentication is provided" do
       assert {:ok, user} = create_user()
 
-      assert {:ok, %{errors: errors}} =
-               Absinthe.run(@update_user_test_doc, Schema,
-                 variables: %{
-                   "id" => to_string(user.id),
-                   "name" => "TryMe"
-                 }
-               )
+      variables = %{
+        "id" => to_string(user.id),
+        "name" => "TryMe"
+      }
 
-      assert errors
-      [auth_error] = errors
-      assert auth_error
-      assert auth_error.code === :internal_server_error
-      assert auth_error.message === "authentication failed"
+      test_failure_with_error(
+        @update_user_test_doc,
+        error_message: "authentication failed",
+        variables: variables
+      )
     end
 
     test "fails if token is not valid" do
       assert {:ok, user} = create_user()
 
-      assert {:ok, %{errors: errors}} =
-               Absinthe.run(@update_user_test_doc, Schema,
-                 context: %{auth_token: "wrong_secret"},
-                 variables: %{
-                   "id" => to_string(user.id),
-                   "name" => "TryMe"
-                 }
-               )
+      context = %{auth_token: "not_valid"}
 
-      assert errors
-      [auth_error] = errors
-      assert auth_error
-      assert auth_error.code === :internal_server_error
-      assert auth_error.message === "authentication failed"
+      variables = %{
+        "id" => to_string(user.id),
+        "name" => "TryMe"
+      }
+
+      test_failure_with_error(
+        @update_user_test_doc,
+        error_message: "authentication failed",
+        context: context,
+        variables: variables
+      )
     end
 
     test "Updates user successfully" do
@@ -200,17 +193,17 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
     end
 
     test "fails when no user is found with given id" do
-      assert {:ok, %{errors: errors}} =
-               Absinthe.run(@update_user_test_doc, Schema,
-                 context: %{auth_token: "Imsecret"},
-                 variables: %{
-                   "id" => "0",
-                   "name" => "Walter White"
-                 }
-               )
+      variables = %{
+        "id" => "0",
+        "name" => "Walter White"
+      }
 
-      not_found = Enum.find(errors, &(&1.code === :not_found))
-      assert not_found
+      test_failure_with_error(
+        @update_user_test_doc,
+        error_code: :not_found,
+        context: %{auth_token: "Imsecret"},
+        variables: variables
+      )
     end
 
     test "Updating an user increases update_user's hit count" do
@@ -247,36 +240,28 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
     end
 
     test "fails if no authentication is provided", %{user: user} do
-      assert {:ok, %{errors: errors}} =
-               Absinthe.run(@update_user_preferences_test_doc, Schema,
-                 variables: %{
-                   "userId" => to_string(user.id),
-                   "name" => "TryMe"
-                 }
-               )
+      variables = %{
+        "userId" => to_string(user.id),
+        "name" => "TryMe"
+      }
 
-      assert errors
-      [auth_error] = errors
-      assert auth_error
-      assert auth_error.code === :internal_server_error
-      assert auth_error.message === "authentication failed"
+      test_failure_with_error(@update_user_preferences_test_doc,
+        error_message: "authentication failed",
+        variables: variables
+      )
     end
 
     test "fails if a wrong token is provided", %{user: user} do
-      assert {:ok, %{errors: errors}} =
-               Absinthe.run(@update_user_preferences_test_doc, Schema,
-                 context: %{auth_token: "wrong_secret"},
-                 variables: %{
-                   "userId" => to_string(user.id),
-                   "name" => "TryMe"
-                 }
-               )
+      variables = %{
+        "userId" => to_string(user.id),
+        "name" => "TryMe"
+      }
 
-      assert errors
-      [auth_error] = errors
-      assert auth_error
-      assert auth_error.code === :internal_server_error
-      assert auth_error.message === "authentication failed"
+      test_failure_with_error(@update_user_preferences_test_doc,
+        error_message: "authentication failed",
+        context: %{auth_token: "wrong_secret"},
+        variables: variables
+      )
     end
 
     test "Updates user preferences successfully", %{user: user} do
@@ -293,17 +278,16 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
     end
 
     test "User preferences update fails when user is not found" do
-      assert {:ok, %{errors: errors}} =
-               Absinthe.run(@update_user_preferences_test_doc, Schema,
-                 context: %{auth_token: "Imsecret"},
-                 variables: %{
-                   "userId" => "0",
-                   "likesEmails" => false
-                 }
-               )
+      variables = %{
+        "userId" => "0",
+        "likesEmails" => false
+      }
 
-      not_found = Enum.find(errors, &(&1.code === :not_found))
-      assert not_found
+      test_failure_with_error(@update_user_preferences_test_doc,
+        error_code: :not_found,
+        context: %{auth_token: "Imsecret"},
+        variables: variables
+      )
     end
 
     test "User preferences update fails when invalid data is supplied", %{user: user} do
