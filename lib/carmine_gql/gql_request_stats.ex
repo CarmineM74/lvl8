@@ -1,32 +1,42 @@
 defmodule CarmineGql.GqlRequestStats do
-  use Agent
+  use GenServer
 
   alias __MODULE__
 
   def start_link(opts \\ []) do
     name = Keyword.get(opts, :name) || GqlRequestStats
-    state = Keyword.get(opts, :state, %{})
-    Agent.start_link(fn -> state end, name: name)
+
+    request_counters =
+      :ets.new(:request_counters, [
+        :named_table,
+        :set,
+        :public,
+        read_concurrency: true,
+        write_concurrency: true
+      ])
+
+    GenServer.start_link(__MODULE__, request_counters, name: name)
   end
 
-  def get_hit_counter(request, agent \\ __MODULE__)
-  def get_hit_counter(nil, _agent), do: 0
-
-  def get_hit_counter(request, agent)
-      when is_binary(request) and (is_pid(agent) or is_atom(agent)) do
-    Agent.get(agent, fn state ->
-      Map.get(state, request, 0)
-    end)
+  @impl true
+  def init(init_state) do
+    {:ok, init_state}
   end
 
-  def hit(request, agent \\ __MODULE__)
-  def hit("", _agent), do: :ok
-  def hit(nil, _agent), do: :ok
+  def get_hit_counter(nil), do: 0
 
-  def hit(request, agent)
-      when is_binary(request) and (is_pid(agent) or is_atom(agent)) do
-    Agent.update(agent, fn state ->
-      Map.update(state, request, 1, &(&1 + 1))
-    end)
+  def get_hit_counter(request) when is_binary(request) do
+    case :ets.lookup(:request_counters, request) do
+      [{^request, counter}] -> counter
+      [] -> 0
+    end
+  end
+
+  def hit(""), do: :ok
+  def hit(nil), do: :ok
+
+  def hit(request)
+      when is_binary(request) do
+    :ets.update_counter(:request_counters, request, 1, {request, 0})
   end
 end

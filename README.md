@@ -1,18 +1,12 @@
 # CarmineGql
 
-To start your Phoenix server:
+Resolve Counter Upgrade
 
-  * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+In order to achieve a higher scale, we're going to need to upgrade our resolver counter, since it's happening on every request. How you do this is up to you, but it will need to be able to move much quicker than it can on one process. (We are not allowed to use any libraries for this)
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+## Solution
 
-## Learn more
+Use ETS to leverage read and write concurrency.
+Migrate Counter agent to a GenServer facading an ETS table (Non blocking GenServer)
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
