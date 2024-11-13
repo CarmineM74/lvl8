@@ -2,6 +2,7 @@
 /_build/
 
 _wk*/
+wk*/
 
 # If you run "mix test --cover", coverage assets end up here.
 /cover/
@@ -36,4 +37,3 @@ payment_srv_carmine-*.tar
 # In case you use Node.js/npm, you want to ignore these.
 npm-debug.log
 /assets/node_modules/
-
