@@ -24,7 +24,7 @@ defmodule CarmineGql.Application do
     do: supervised_children(:common)
 
   defp supervised_children(_other),
-    do: supervised_children(:common) ++ [CarmineGql.GqlRequestStats]
+    do: supervised_children(:common) ++ [CarmineGql.GqlRequestStats, CarmineGql.AuthTokenCache]
 
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.

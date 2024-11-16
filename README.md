@@ -1,12 +1,13 @@
 # CarmineGql
 
-Resolve Counter Upgrade
+## GenStage Pipeline
 
-In order to achieve a higher scale, we're going to need to upgrade our resolver counter, since it's happening on every request. How you do this is up to you, but it will need to be able to move much quicker than it can on one process. (We are not allowed to use any libraries for this)
+Now that we have all our emails in place, we're going to write a system to run through all the users daily and generate an auth token unique to that user,
+it will store it within some sort of cache, for us to then be able to give this auth token to the user.
+For the purpose of this assignment, no external libraries are allowed.
+To do this we're going to create a GenStage system that will allow us to Produce users and our consumers can generate tokens for that user or remove stale ones if necessary
 
+### Solution
+GenStage will perform token generation, while storage can be cached using ETS and NonBlockingGenServer, the same way we did with GqlRequestStats
 
-## Solution
-
-Use ETS to leverage read and write concurrency.
-Migrate Counter agent to a GenServer facading an ETS table (Non blocking GenServer)
-
+Producer will populate Tokens cache daily with unique auth token per user.

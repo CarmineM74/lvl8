@@ -46,7 +46,8 @@ defmodule CarmineGql.MixProject do
       {:dataloader, "~> 1.0.0"},
       {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.0.0"},
-      {:ecto_shorts, "~> 2.3.0"}
+      {:ecto_shorts, "~> 2.3.0"},
+      {:gen_stage, "~> 1.2.1"}
     ]
   end
 
