@@ -1,9 +1,11 @@
 defmodule CarmineGql.AuthTokenCache do
+  alias CarmineGql.AuthTokenCache
   use GenServer
 
-  @token_ttl 86400
+  require Logger
 
   def start_link(_init_args) do
+    Logger.debug("AuthTokenCache starting")
     :ets.new(:auth_token_cache, [
       :named_table,
       :set,
@@ -17,13 +19,8 @@ defmodule CarmineGql.AuthTokenCache do
 
   def all(), do: :ets.tab2list(:auth_token_cache)
 
-  def expire_stale_tokens() do
-    current_time = :os.system_time(:seconds)
-    :ets.select_delete(:auth_token_cache, [{{:_, :_, :"$3"}, [{:"=<", :"$3", current_time}], [true]}])
-  end
-
-  def put(user_email, auth_token) do
-    expiration = :os.system_time(:seconds) + @token_ttl
+  def put(user_email, auth_token, ttl \\ 86400) do
+    expiration = :os.system_time(:seconds) + ttl
     :ets.insert(:auth_token_cache, {user_email, auth_token, expiration})
   end
 
@@ -34,8 +31,15 @@ defmodule CarmineGql.AuthTokenCache do
     end
   end
 
+  def purge_stale_tokens() do
+    Logger.debug("Purging stale auth tokens from cache")
+    current_time = :os.system_time(:seconds)
+    :ets.select_delete(:auth_token_cache, [{{:_, :_, :"$3"}, [{:"=<", :"$3", current_time}], [true]}])
+  end
+
   @impl true
   def init(init_state) do
     {:ok, init_state}
   end
+
 end

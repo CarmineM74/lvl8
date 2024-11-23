@@ -41,9 +41,10 @@ config :carmine_gql, CarmineGqlWeb.Endpoint,
 
 # Enable dev routes for dashboard and mailbox
 config :carmine_gql, dev_routes: true
+config :carmine_gql, auth_token_ttl: 35
 
 # Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$level] $message\n"
+config :logger, :console, format: "$time $metadata[$level] $message\n"
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

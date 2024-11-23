@@ -11,3 +11,6 @@ To do this we're going to create a GenStage system that will allow us to Produce
 GenStage will perform token generation, while storage can be cached using ETS and NonBlockingGenServer, the same way we did with GqlRequestStats
 
 Producer will populate Tokens cache daily with unique auth token per user.
+
+### Notes
+- What should happen if the an attempt to fetch the token is performed while the cache is being purged?

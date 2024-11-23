@@ -5,6 +5,8 @@ defmodule CarmineGql.Accounts do
   alias EctoShorts.Actions
   alias CarmineGql.ErrorUtils
 
+  def all_users(), do: {:ok, Actions.all(User.with_preferences)}
+
   def users_by_email(criteria \\ %{}), do: {:ok, Actions.all(User.filter_by_email(criteria))}
 
   def user_by_id(id) do
