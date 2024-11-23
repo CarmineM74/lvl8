@@ -3,7 +3,7 @@ defmodule CarmineGql.AuthTokensPipeline.UsersConsumerSupervisor do
   require Logger
   alias CarmineGql.AuthTokensPipeline.UsersConsumer
 
-  @concurrent_consumers 2
+  @concurrent_consumers Application.compile_env(:carmine_gql, :users_consumer_max_demand, 2)
 
   def start_link(_init_args) do
     Logger.debug("UsersConsumerSupervisor starting")
@@ -19,7 +19,12 @@ defmodule CarmineGql.AuthTokensPipeline.UsersConsumerSupervisor do
         restart: :transient
       }
     ]
-    opts = [strategy: :one_for_one, subscribe_to: [{AuthTokenUsersProducer, max_demand: @concurrent_consumers}]]
+
+    opts = [
+      strategy: :one_for_one,
+      subscribe_to: [{AuthTokenUsersProducer, max_demand: @concurrent_consumers}]
+    ]
+
     ConsumerSupervisor.init(children, opts)
   end
 end

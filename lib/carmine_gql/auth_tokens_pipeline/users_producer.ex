@@ -22,12 +22,12 @@ defmodule CarmineGql.AuthTokensPipeline.UsersProducer do
   def handle_info(:populate, state) do
     AuthTokenCache.purge_stale_tokens()
     {:ok, users} = Accounts.all_users()
-    emails = Enum.map(users, & &1.email)
+    ids = Enum.map(users, & &1.id)
     cached_tokens = AuthTokenCache.all() |> Enum.map(&elem(&1, 0))
-    emails_to_authorize = Enum.reject(emails, &(&1 in cached_tokens))
-    Logger.debug("Auth tokens to produce: #{Enum.count(emails_to_authorize)}")
+    ids_to_authorize = Enum.reject(ids, &(&1 in cached_tokens))
+    Logger.debug("Auth tokens to produce: #{Enum.count(ids_to_authorize)}")
     Process.send_after(AuthTokenUsersProducer, :populate, @fetch_interval * 1000)
-    {:noreply, emails_to_authorize, state}
+    {:noreply, ids_to_authorize, state}
   end
 
   @impl true

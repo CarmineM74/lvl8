@@ -25,5 +25,13 @@ defmodule CarmineGqlWeb.Schema.Subscriptions.User do
           preferences.user_id
         end
     end
+
+    field :user_auth_token, :string do
+      arg :user_id, :id
+
+      config fn args, _ ->
+        {:ok, topic: args.user_id}
+      end
+    end
   end
 end
