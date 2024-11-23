@@ -6,6 +6,7 @@ defmodule CarmineGql.AuthTokenCache do
 
   def start_link(_init_args) do
     Logger.debug("AuthTokenCache starting")
+
     :ets.new(:auth_token_cache, [
       :named_table,
       :set,
@@ -27,19 +28,21 @@ defmodule CarmineGql.AuthTokenCache do
   def get(user_email) do
     case :ets.lookup(:auth_token_cache, user_email) do
       [{^user_email, auth_token, _expiration}] -> {:ok, auth_token}
-      [] -> {:error, :missing_auth_token}
+      [] -> {:ok, ""}
     end
   end
 
   def purge_stale_tokens() do
     Logger.debug("Purging stale auth tokens from cache")
     current_time = :os.system_time(:seconds)
-    :ets.select_delete(:auth_token_cache, [{{:_, :_, :"$3"}, [{:"=<", :"$3", current_time}], [true]}])
+
+    :ets.select_delete(:auth_token_cache, [
+      {{:_, :_, :"$3"}, [{:"=<", :"$3", current_time}], [true]}
+    ])
   end
 
   @impl true
   def init(init_state) do
     {:ok, init_state}
   end
-
 end

@@ -1,16 +1,11 @@
 # CarmineGql
 
-## GenStage Pipeline
-
-Now that we have all our emails in place, we're going to write a system to run through all the users daily and generate an auth token unique to that user,
-it will store it within some sort of cache, for us to then be able to give this auth token to the user.
-For the purpose of this assignment, no external libraries are allowed.
-To do this we're going to create a GenStage system that will allow us to Produce users and our consumers can generate tokens for that user or remove stale ones if necessary
-
-### Solution
-GenStage will perform token generation, while storage can be cached using ETS and NonBlockingGenServer, the same way we did with GqlRequestStats
-
-Producer will populate Tokens cache daily with unique auth token per user.
+## GQL Modifications
+Now that we have our auth tokens being generated, we need a way to get a token for a current user using GraphQL.
+What we're going to do, is add an `auth_token` field to our user type, and have that return the auth_token from our cache, for the user.
+We're also going to add a subscription for `userAuthToken(user_id: String!): string` which will trigger whenever a new token is generated
+for a specific user_id.
 
 ### Notes
-- What should happen if the an attempt to fetch the token is performed while the cache is being purged?
+- Tests must be written for the GQL part
+- Should we also write tests for the auth tokens cache?

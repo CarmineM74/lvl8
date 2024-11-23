@@ -1,6 +1,7 @@
 defmodule CarmineGqlWeb.Resolvers.Users do
   alias CarmineGql.Accounts
   alias CarmineGql.GqlRequestStats, as: Stats
+  alias CarmineGql.AuthTokenCache
 
   def by_id(%{id: id}, _resolution) do
     Stats.hit("user")
@@ -28,4 +29,8 @@ defmodule CarmineGqlWeb.Resolvers.Users do
   end
 
   def resolver_hits(%{key: key}, _resolution), do: {:ok, Stats.get_hit_counter(key)}
+
+  def fetch_auth_token(_args, resolution) do
+    AuthTokenCache.get(resolution.source.email <> "@")
+  end
 end
