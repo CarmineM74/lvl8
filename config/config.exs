@@ -41,6 +41,17 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# LibCluster configuration
+config :libcluster,
+  topologies: [
+    epmd: [
+      strategy: Cluster.Strategy.Epmd,
+      config: [
+        hosts: [:node_a@localhost, :node_b@localhost]
+      ]
+    ]
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

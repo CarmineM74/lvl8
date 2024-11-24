@@ -1,10 +1,9 @@
 # CarmineGql
 
-## GQL Modifications
-Now that we have our auth tokens being generated, we need a way to get a token for a current user using GraphQL.
-What we're going to do, is add an `auth_token` field to our user type, and have that return the auth_token from our cache, for the user.
-We're also going to add a subscription for `userAuthToken(user_id: String!): string` which will trigger whenever a new token is generated
-for a specific user_id.
+## Distribution setup
+
+We're also going to start adding nodes, and need to scale our server.
+For this we can use LibCluster, so add it in, and set it up so we can have 2 nodes in development (`node_a@localhost` and `node_b@localhost`)
 
 ### Notes
 - Tests must be written for the GQL part

@@ -4,7 +4,6 @@ defmodule CarmineGql.Application do
   @impl true
   def start(_type, _args) do
     children = supervised_children(Mix.env())
-
     opts = [strategy: :one_for_one, name: CarmineGql.Supervisor]
     Supervisor.start_link(children, opts)
   end
@@ -23,8 +22,18 @@ defmodule CarmineGql.Application do
   defp supervised_children(:test),
     do: supervised_children(:common)
 
-  defp supervised_children(_other),
-    do: supervised_children(:common) ++ [CarmineGql.GqlRequestStats, CarmineGql.AuthTokenCache, CarmineGql.AuthTokensPipeline.UsersProducer, CarmineGql.AuthTokensPipeline.UsersConsumerSupervisor]
+  defp supervised_children(_other) do
+    topologies = Application.get_env(:libcluster, :topologies)
+
+    supervised_children(:common) ++
+      [
+        CarmineGql.GqlRequestStats,
+        CarmineGql.AuthTokenCache,
+        CarmineGql.AuthTokensPipeline.UsersProducer,
+        CarmineGql.AuthTokensPipeline.UsersConsumerSupervisor,
+        {Cluster.Supervisor, [topologies, [name: CarmineGql.ClusterSupervisor]]}
+      ]
+  end
 
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
