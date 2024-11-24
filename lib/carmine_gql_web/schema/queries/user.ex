@@ -19,5 +19,10 @@ defmodule CarmineGqlWeb.Schema.Queries.User do
       arg :key, non_null(:string)
       resolve &Users.resolver_hits/2
     end
+
+    field :user_from_token, :user do
+      arg :auth_token, non_null(:string)
+      resolve &Users.fetch_user_from_auth_token/2
+    end
   end
 end

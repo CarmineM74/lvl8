@@ -1,10 +1,11 @@
 # CarmineGql
 
-## Distribution setup
+## Fetch user from token
 
-We're also going to start adding nodes, and need to scale our server.
-For this we can use LibCluster, so add it in, and set it up so we can have 2 nodes in development (`node_a@localhost` and `node_b@localhost`)
+Optional:
+If you're up for an extra challenge, try allowing specific user tokens through and create a query to return the current user for the token
 
 ### Notes
+- TODO: Code refactoring
 - Tests must be written for the GQL part
 - Should we also write tests for the auth tokens cache?
