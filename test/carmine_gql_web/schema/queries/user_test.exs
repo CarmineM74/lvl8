@@ -4,6 +4,7 @@ defmodule CarmineGqlWeb.Schema.Queries.UserTest do
   alias CarmineGqlWeb.Schema
   alias CarmineGql.GqlRequestStats, as: Stats
 
+  import CarmineGql.Test.Support, only: [test_failure_with_error: 2]
   import CarmineGql.Support.UserFixtures
 
   setup do
@@ -159,6 +160,50 @@ defmodule CarmineGqlWeb.Schema.Queries.UserTest do
                Absinthe.run(@resolver_hits_test_doc, Schema, variables: %{"key" => "create_user"})
 
       assert data["resolverHits"] === 0
+    end
+  end
+
+  @user_from_token_test_doc """
+    query userFromToken($authToken: String!) {
+      userFromToken(authToken: $authToken) {
+        id
+        name
+        email
+        authToken
+        preferences {
+          likesEmails
+          likesFaxes
+          likesPhoneCalls
+        }
+      }
+    }
+  """
+  describe "@userFromToken" do
+    setup do
+      {:ok, _pid} = CarmineGql.AuthTokenCache.start_link(nil)
+      {:ok, user} = create_user()
+      {:ok, %{user: user}}
+    end
+
+    test "returns :not_found error code when no user exists with given token" do
+      test_failure_with_error(@user_from_token_test_doc,
+        variables: %{"authToken" => "FAKE"},
+        error_code: :not_found,
+        error_message: "user not found"
+      )
+    end
+
+    test "return the user with the associated auth token", %{user: user} do
+      CarmineGql.AuthTokenCache.put(user.id, "SUPA-SEKRET-TOKEN")
+
+      assert {:ok, %{data: data}} =
+               Absinthe.run(@user_from_token_test_doc, Schema,
+                 variables: %{"authToken" => "SUPA-SEKRET-TOKEN"}
+               )
+
+      user_from_token = data["userFromToken"]
+      assert user_from_token["id"] === to_string(user.id)
+      assert user_from_token["authToken"] === "SUPA-SEKRET-TOKEN"
     end
   end
 end

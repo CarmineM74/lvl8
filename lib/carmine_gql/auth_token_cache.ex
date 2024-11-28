@@ -20,9 +20,9 @@ defmodule CarmineGql.AuthTokenCache do
 
   def all(), do: :ets.tab2list(:auth_token_cache)
 
-  def put(user_email, auth_token, ttl \\ 86400) do
+  def put(user_id, auth_token, ttl \\ 86400) do
     expiration = :os.system_time(:seconds) + ttl
-    :ets.insert(:auth_token_cache, {user_email, auth_token, expiration})
+    :ets.insert(:auth_token_cache, {user_id, auth_token, expiration})
   end
 
   def get(%{user_id: user_id}) do
@@ -37,7 +37,7 @@ defmodule CarmineGql.AuthTokenCache do
 
     case :ets.select(:auth_token_cache, pattern) do
       [user_id] -> {:ok, user_id}
-      [] -> {:ok, ""}
+      [] -> {:error, :user_not_found}
     end
   end
 

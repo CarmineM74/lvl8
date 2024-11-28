@@ -2,6 +2,7 @@ defmodule CarmineGqlWeb.Resolvers.Users do
   alias CarmineGql.Accounts
   alias CarmineGql.GqlRequestStats, as: Stats
   alias CarmineGql.AuthTokenCache
+  alias CarmineGql.ErrorUtils
 
   def by_id(%{id: id}, _resolution) do
     Stats.hit("user")
@@ -35,7 +36,9 @@ defmodule CarmineGqlWeb.Resolvers.Users do
   end
 
   def fetch_user_from_auth_token(%{auth_token: auth_token}, _resolution) do
-    {:ok, user_id} = AuthTokenCache.get(%{auth_token: auth_token})
-    Accounts.user_by_id(user_id)
+    case AuthTokenCache.get(%{auth_token: auth_token}) do
+      {:ok, user_id} -> Accounts.user_by_id(user_id)
+      {:error, :user_not_found} -> {:error, ErrorUtils.not_found("user not found")}
+    end
   end
 end
