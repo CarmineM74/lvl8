@@ -2,21 +2,19 @@ defmodule CarmineGql.AuthTokenCache do
   alias CarmineGql.AuthTokenCache
   use Agent
 
-  require Logger
-
   def start_link(_init_args) do
-    Logger.debug("AuthTokenCache starting")
-
-    Agent.start_link(fn -> 
-    :ets.new(:auth_token_cache, [
-      :named_table,
-      :set,
-      :public,
-      read_concurrency: true,
-      write_concurrency: true
-    ])
-
-    end, name: AuthTokenCache)
+    Agent.start_link(
+      fn ->
+        :ets.new(:auth_token_cache, [
+          :named_table,
+          :set,
+          :public,
+          read_concurrency: true,
+          write_concurrency: true
+        ])
+      end,
+      name: AuthTokenCache
+    )
   end
 
   def all(), do: :ets.tab2list(:auth_token_cache)
@@ -43,12 +41,10 @@ defmodule CarmineGql.AuthTokenCache do
   end
 
   def purge_stale_tokens() do
-    Logger.debug("Purging stale auth tokens from cache")
     current_time = :os.system_time(:seconds)
 
     :ets.select_delete(:auth_token_cache, [
       {{:_, :_, :"$3"}, [{:"=<", :"$3", current_time}], [true]}
     ])
   end
-
 end
