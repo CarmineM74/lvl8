@@ -7,5 +7,6 @@ If you're up for an extra challenge, try allowing specific user tokens through a
 
 ### Notes
 - TODO: Code refactoring
+  - AuthTokenCache convert from GenServer to Agent?
 - Tests must be written for the GQL part
 - Should we also write tests for the auth tokens cache?

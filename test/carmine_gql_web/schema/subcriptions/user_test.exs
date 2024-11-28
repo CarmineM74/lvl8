@@ -190,6 +190,43 @@ defmodule CarmineGql.Schema.Subscriptions.UserTest do
     end
   end
 
+  @updated_user_auth_token_test_doc """
+    subscription userAuthToken($userId: ID!) {
+      userAuthToken(userId: $userId)
+    }
+  """
+  describe "@userAuthToken" do
+    setup do
+      {:ok, user} = create_user()
+      {:ok, %{user: user}}
+    end
+
+    test "returns user's auth token upon token update", %{socket: socket, user: user} do
+      user_id = to_string(user.id)
+      auth_token = "SUPA-SEKRET"
+
+      ref =
+        push_doc(socket, @updated_user_auth_token_test_doc, %{
+          variables: %{"userId" => user_id}
+        })
+
+      assert_reply(ref, :ok, %{subscriptionId: subscription_id})
+
+      Absinthe.Subscription.publish(CarmineGqlWeb.Endpoint, auth_token, user_auth_token: user.id)
+
+      assert_push("subscription:data", data)
+
+      assert %{
+               subscriptionId: ^subscription_id,
+               result: %{
+                 data: %{
+                   "userAuthToken" => ^auth_token
+                 }
+               }
+             } = data
+    end
+  end
+
   defp authenticate_socket(socket, token \\ "Imsecret") do
     socket =
       Absinthe.Phoenix.Socket.put_options(socket,
