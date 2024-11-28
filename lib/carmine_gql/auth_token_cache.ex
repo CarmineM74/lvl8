@@ -1,12 +1,13 @@
 defmodule CarmineGql.AuthTokenCache do
   alias CarmineGql.AuthTokenCache
-  use GenServer
+  use Agent
 
   require Logger
 
   def start_link(_init_args) do
     Logger.debug("AuthTokenCache starting")
 
+    Agent.start_link(fn -> 
     :ets.new(:auth_token_cache, [
       :named_table,
       :set,
@@ -15,7 +16,7 @@ defmodule CarmineGql.AuthTokenCache do
       write_concurrency: true
     ])
 
-    GenServer.start_link(__MODULE__, nil, name: AuthTokenCache)
+    end, name: AuthTokenCache)
   end
 
   def all(), do: :ets.tab2list(:auth_token_cache)
@@ -50,8 +51,4 @@ defmodule CarmineGql.AuthTokenCache do
     ])
   end
 
-  @impl true
-  def init(init_state) do
-    {:ok, init_state}
-  end
 end
