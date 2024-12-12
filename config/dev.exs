@@ -44,7 +44,7 @@ config :carmine_gql, CarmineGqlWeb.Endpoint,
 
 # Enable dev routes for dashboard and mailbox
 config :carmine_gql, dev_routes: true
-config :carmine_gql, auth_token_ttl: 35
+config :carmine_gql, auth_token_ttl: 20
 config :carmine_gql, users_consumer_max_demand: 2
 
 # Do not include metadata nor timestamps in development logs
