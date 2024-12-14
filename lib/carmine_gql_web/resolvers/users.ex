@@ -32,11 +32,12 @@ defmodule CarmineGqlWeb.Resolvers.Users do
   def resolver_hits(%{key: key}, _resolution), do: {:ok, Stats.get_hit_counter(key)}
 
   def fetch_auth_token(_args, resolution) do
-    AuthTokenCache.get(%{user_id: resolution.source.id})
+    {:ok, {_id, auth_token, _expiration}} = AuthTokenCache.get_user(resolution.source.id)
+    {:ok, auth_token}
   end
 
   def fetch_user_from_auth_token(%{auth_token: auth_token}, _resolution) do
-    case AuthTokenCache.get(%{auth_token: auth_token}) do
+    case AuthTokenCache.get_user_from_token(auth_token) do
       {:ok, user_id} -> Accounts.user_by_id(user_id)
       {:error, :user_not_found} -> {:error, ErrorUtils.not_found("user not found")}
     end

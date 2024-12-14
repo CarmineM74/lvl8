@@ -18,6 +18,7 @@ defmodule CarmineGqlWeb.Schema.Middlewares.Auth do
 
   def call(resolution, _opts) do
     Logger.debug("AUTH MIDDLEWARE: #{inspect(resolution.context)}")
+
     Absinthe.Resolution.put_result(
       resolution,
       {:error, ErrorUtils.internal_server_error("authentication failed")}

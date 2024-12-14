@@ -10,10 +10,32 @@ defmodule CarmineGql.AuthTokensPipeline.UsersConsumer do
   end
 
   defp generate_auth_tokens(id) do
+    id
+    |> AuthTokenCache.get_user()
+    |> refresh_required?()
+    |> maybe_refresh_auth_token(id)
+  end
+
+  def refresh_required?({:ok, ""}), do: :refresh
+
+  def refresh_required?({:ok, {_id, _token, expiration}}) do
+    current_time = :os.system_time(:seconds)
+
+    if current_time >= expiration do
+      :refresh
+    else
+      :no_refresh_needed
+    end
+  end
+
+  def maybe_refresh_auth_token(:no_refresh_needed, _id), do: :ok
+
+  def maybe_refresh_auth_token(:refresh, id) do
     ttl = Application.get_env(:carmine_gql, :auth_token_ttl, @default_token_ttl)
     auth_token = Base.encode64(:rand.bytes(12))
     Logger.debug("Caching auth token #{auth_token} for #{id}")
     AuthTokenCache.put(id, auth_token, ttl)
     Absinthe.Subscription.publish(CarmineGqlWeb.Endpoint, auth_token, user_auth_token: id)
+    :ok
   end
 end

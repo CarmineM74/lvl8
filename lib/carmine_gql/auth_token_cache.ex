@@ -24,14 +24,14 @@ defmodule CarmineGql.AuthTokenCache do
     :ets.insert(:auth_token_cache, {user_id, auth_token, expiration})
   end
 
-  def get(%{user_id: user_id}) do
+  def get_user(user_id) do
     case :ets.lookup(:auth_token_cache, user_id) do
-      [{^user_id, auth_token, _expiration}] -> {:ok, auth_token}
+      [{^user_id, _auth_token, _expiration} = user] -> {:ok, user}
       [] -> {:ok, ""}
     end
   end
 
-  def get(%{auth_token: auth_token}) do
+  def get_user_from_token(auth_token) do
     pattern = [{{:"$1", :"$2", :"$3"}, [{:==, :"$2", auth_token}], [:"$1"]}]
 
     case :ets.select(:auth_token_cache, pattern) do

@@ -31,10 +31,12 @@ defmodule CarmineGql.Accounts.User do
 
   def apply_email_filter({:not_in, values}, query) when is_list(values) and length(values) > 0,
     do: where(query, [u, _p], u.email not in ^values)
+
   def apply_email_filter({:not_in, _values}, query), do: query
 
   def apply_email_filter({:in, values}, query) when is_list(values) and length(values) > 0,
     do: where(query, [u, _p], u.email in ^values)
+
   def apply_email_filter({:in, _values}, query), do: query
 
   def filter_by_preferences(preferences) do
