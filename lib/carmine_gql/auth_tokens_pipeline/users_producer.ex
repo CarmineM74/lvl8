@@ -15,6 +15,14 @@ defmodule CarmineGql.AuthTokensPipeline.UsersProducer do
     {:producer, init_state}
   end
 
+  def new_user_created(id) do
+    GenStage.cast(AuthTokenUsersProducer, {:new_user_created, id})
+  end
+
+  def handle_cast({:new_user_created, id}, state) do
+    {:noreply, [id], state}
+  end
+
   @impl true
   def handle_info(:purge, state) do
     Process.send_after(self(), :purge,  1000)

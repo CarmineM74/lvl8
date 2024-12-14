@@ -1,9 +1,11 @@
 defmodule CarmineGql.Accounts do
+  alias CarmineGql.AuthTokensPipeline
   alias CarmineGqlWeb.Schema.Mutations.User
   alias CarmineGql.Accounts.{User, Preference}
   alias CarmineGql.Repo
   alias EctoShorts.Actions
   alias CarmineGql.ErrorUtils
+  alias CarmineGql.AuthTokensPipeline.UsersProducer
 
   def all_users(filters \\ %{}), do: {:ok, Actions.all(User.with_preferences, filters)}
 
@@ -28,12 +30,12 @@ defmodule CarmineGql.Accounts do
 
   def create_user(params \\ %{}) do
     params = maybe_set_default_preferences(params)
-
     case Actions.create(User, params) do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
 
       {:ok, user} ->
+        AuthTokensPipeline.UsersProducer.new_user_created(user.id)
         {:ok, user}
     end
   end
