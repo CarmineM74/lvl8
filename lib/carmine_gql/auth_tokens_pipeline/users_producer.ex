@@ -1,6 +1,5 @@
 defmodule CarmineGql.AuthTokensPipeline.UsersProducer do
   use GenStage
-  alias ElixirSense.Log
   alias CarmineGql.AuthTokenCache
   alias CarmineGql.Accounts
 
@@ -38,7 +37,7 @@ defmodule CarmineGql.AuthTokensPipeline.UsersProducer do
     ids_to_authorize = Enum.reject(ids, &(&1 in cached_tokens))
     {state, ids_to_authorize}
   end
-  
+
   defp slide_window({state, ids_to_authorize}) do
     users_count = Accounts.users_count()
     new_offset = Integer.mod(state.stream_offset + state.demand, users_count + 1)
