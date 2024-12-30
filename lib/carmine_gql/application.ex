@@ -15,7 +15,8 @@ defmodule CarmineGql.Application do
       {Phoenix.PubSub, name: CarmineGql.PubSub},
       CarmineGql.Repo,
       CarmineGqlWeb.Endpoint,
-      {Absinthe.Subscription, CarmineGqlWeb.Endpoint}
+      {Absinthe.Subscription, CarmineGqlWeb.Endpoint},
+      {PrometheusTelemetry, exporter: [enabled?: true], metrics: CarmineGql.Metrics.metrics()}
     ]
   end
 

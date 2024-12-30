@@ -48,7 +48,8 @@ defmodule CarmineGql.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:ecto_shorts, "~> 2.3.0"},
       {:gen_stage, "~> 1.2.1"},
-      {:libcluster, "~> 3.4"}
+      {:libcluster, "~> 3.4"},
+      {:prometheus_telemetry, "~> 0.4"}
     ]
   end
 
