@@ -7,14 +7,23 @@ defmodule CarmineGql.Accounts do
   alias CarmineGql.ErrorUtils
   alias CarmineGql.AuthTokensPipeline
 
-  def all_users(filters \\ %{}), do: {:ok, Actions.all(User.with_preferences(), filters)}
+  def all_users(filters \\ %{}),
+    do:
+      {:ok,
+       Actions.all(User.with_preferences(), filters, telemetry_options: [label: "all users"])}
 
-  def users_count(), do: Actions.aggregate(User, %{}, :count, :id)
+  def users_count(),
+    do: Actions.aggregate(User, %{}, :count, :id, telemetry_options: [label: "count users"])
 
-  def users_by_email(criteria \\ %{}), do: {:ok, Actions.all(User.filter_by_email(criteria))}
+  def users_by_email(criteria \\ %{}),
+    do:
+      {:ok,
+       Actions.all(User.filter_by_email(criteria), %{},
+         telemetry_options: [label: "users by email"]
+       )}
 
   def user_by_id(id) do
-    case Actions.get(User, id) do
+    case Actions.get(User, id, telemetry_options: [label: "user by id"]) do
       nil ->
         {:error, ErrorUtils.not_found("user not found", %{id: id})}
 
@@ -24,14 +33,18 @@ defmodule CarmineGql.Accounts do
   end
 
   def user_by_preferences(preferences \\ %{}) do
-    users = Actions.all(User.filter_by_preferences(preferences))
+    users =
+      Actions.all(User.filter_by_preferences(preferences), %{},
+        telemetry_options: [label: "user by preferences"]
+      )
+
     {:ok, users}
   end
 
   def create_user(params \\ %{}) do
     params = maybe_set_default_preferences(params)
 
-    case Actions.create(User, params) do
+    case Actions.create(User, params, telemetry_options: [label: "create user"]) do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
 
@@ -54,7 +67,7 @@ defmodule CarmineGql.Accounts do
   end
 
   def update_user(id, params \\ %{}) do
-    case Actions.update(User, id, params) do
+    case Actions.update(User, id, params, telemetry_options: [label: "update user"]) do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
 
@@ -70,7 +83,9 @@ defmodule CarmineGql.Accounts do
     with {:ok, user} <- user_by_id(id),
          user <- Repo.preload(user, :preferences),
          {:ok, updated_preferences} <-
-           Actions.update(Preference, user.preferences.id, preferences) do
+           Actions.update(Preference, user.preferences.id, preferences,
+             telemetry_options: [label: "update user preferences"]
+           ) do
       {:ok, updated_preferences}
     else
       {:error, %ErrorMessage{} = error_message} ->

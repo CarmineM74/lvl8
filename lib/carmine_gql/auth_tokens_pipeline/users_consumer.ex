@@ -31,11 +31,15 @@ defmodule CarmineGql.AuthTokensPipeline.UsersConsumer do
   def maybe_refresh_auth_token(:no_refresh_needed, _id), do: :ok
 
   def maybe_refresh_auth_token(:refresh, id) do
+    start = System.monotonic_time()
     ttl = Application.get_env(:carmine_gql, :auth_token_ttl, @default_token_ttl)
     auth_token = Base.encode64(:rand.bytes(12))
     Logger.debug("Caching auth token #{auth_token} for #{id}")
     AuthTokenCache.put(id, auth_token, ttl)
     Absinthe.Subscription.publish(CarmineGqlWeb.Endpoint, auth_token, user_auth_token: id)
+    duration = System.monotonic_time() - start
+    CarmineGql.Metrics.increment_auth_tokens_generated()
+    CarmineGql.Metrics.set_duration_for_auth_token_generation(duration)
     :ok
   end
 end
