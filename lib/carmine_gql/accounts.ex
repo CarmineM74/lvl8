@@ -44,7 +44,7 @@ defmodule CarmineGql.Accounts do
   def create_user(params \\ %{}) do
     params = maybe_set_default_preferences(params)
 
-    case Actions.create(User, params, telemetry_options: [label: "create user"]) do
+    case Actions.create(User, params, telemetry_options: [label: "create user", source: "users"]) do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
 
