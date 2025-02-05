@@ -1,11 +1,13 @@
 # CarmineGql
 
 ## TODO:
-  - [x] 1) inside our producer currently, we're loading all the users when the demand is actually known for how many users are needed, instead we need to filter through these using limit & offset while storing the current position in the genstage, this way we can go through all the users till the end and restart
-  - [x] 2) Currently we're also doing the same for our ets tokens, getting all the tokens will become very expensive  so instead we'll want to map through the returned users and use get on them (which is still much faster than getting all tokens as the ets table grows)
+  - [ ] Web API Speedup
+  - [ ] Distributed Request Counter
+  - [ ] Caching Telemetry
+  - [ ] Testing: Make sure we have testing for our new caching systems
+
+  - **Optional**: For extra credit you can try implementing a Singleton Cache that would be accessed in a distributed environment (meaning one node has the data and the rest pull it from that node, think about how you select which node holds the data), use this for the Distributed Request Counter
 
 ### Notes
-- TODO: Code refactoring
-- Should we also write tests for the auth tokens cache?
 
 
