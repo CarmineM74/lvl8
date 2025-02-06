@@ -28,6 +28,7 @@ defmodule CarmineGql.Application do
 
     supervised_children(:common) ++
       [
+        {Redix, name: :redis},
         CarmineGql.GqlRequestStats,
         CarmineGql.AuthTokenCache,
         CarmineGql.AuthTokensPipeline.UsersProducer,
