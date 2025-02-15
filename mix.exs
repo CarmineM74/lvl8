@@ -50,7 +50,7 @@ defmodule CarmineGql.MixProject do
       {:gen_stage, "~> 1.2.1"},
       {:libcluster, "~> 3.4"},
       {:prometheus_telemetry, "~> 0.4"},
-      #{:request_cache_plug, "~> 1.0"},
+      {:request_cache_plug, "~> 1.0"},
       {:redix, "~> 1.1"},
       {:castore, ">= 0.0.0"},
       {:poolboy, "~> 1.5"}

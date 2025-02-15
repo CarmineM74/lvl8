@@ -9,7 +9,7 @@ defmodule CarmineGqlWeb.Router do
   scope "/" do
     pipe_through(:api)
 
-    forward("/graphql", Absinthe.Plug, schema: CarmineGqlWeb.Schema)
+    forward "/graphql", Absinthe.Plug, schema: CarmineGqlWeb.Schema, before_send: {RequestCache, :connect_absinthe_context_to_conn}
 
     if Mix.env() === :dev do
       forward("/graphiql", Absinthe.Plug.GraphiQL,
