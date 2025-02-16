@@ -1,7 +1,7 @@
 # CarmineGql
 
 ## TODO:
-  - [ ] Web API Speedup
+  - [x] Web API Speedup
     - To speed up our API and create a super quick API, we're going to cache all the data we can using the RequestCachePlug library. This [article][1]
       goes over the RequestCachePlug and why it's useful.
 
