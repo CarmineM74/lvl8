@@ -31,8 +31,8 @@ defmodule CarmineGql.Application do
         CarmineGql.RedisCache,
         CarmineGql.GqlRequestStats,
         CarmineGql.AuthTokenCache,
-        #        CarmineGql.AuthTokensPipeline.UsersProducer,
-        #CarmineGql.AuthTokensPipeline.UsersConsumerSupervisor,
+        CarmineGql.AuthTokensPipeline.UsersProducer,
+        CarmineGql.AuthTokensPipeline.UsersConsumerSupervisor,
         {Cluster.Supervisor, [topologies, [name: CarmineGql.ClusterSupervisor]]}
       ]
   end
