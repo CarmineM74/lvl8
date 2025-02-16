@@ -1,14 +1,12 @@
 defmodule CarmineGqlWeb.Resolvers.Users do
-  require Logger
   alias CarmineGql.Accounts
   alias CarmineGql.GqlRequestStats, as: Stats
   alias CarmineGql.AuthTokenCache
   alias CarmineGql.ErrorUtils
 
-  def by_id(%{id: id}, resolution) do
+  def by_id(%{id: id}, _resolution) do
     Stats.hit("user")
-    {_tag, value} = Accounts.user_by_id(id)
-    RequestCache.store(value, :timer.seconds(10))
+    Accounts.user_by_id(id)
   end
 
   def by_preferences(preferences_params, _resolution) do

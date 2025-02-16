@@ -1,5 +1,4 @@
 defmodule CarmineGql.RedisCache do
-  require Logger
   @pool_size 10
   @max_overflow 10
   @pool_name :redis_pool
@@ -38,7 +37,6 @@ defmodule CarmineGql.RedisCache do
   def put(key, ttl, value) do
     ttl_sec = ceil(ttl / 1000)
     :poolboy.transaction(@pool_name, fn pid ->
-      Logger.debug("[RedisCache.put] Key: #{inspect(key)} Val: #{inspect(value)}")
       with {:ok, "OK"} <- Redix.command(pid, ["SETEX", key, ttl_sec, :erlang.term_to_binary(value) ]) do
         :ok
       end

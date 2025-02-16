@@ -35,6 +35,9 @@ defmodule CarmineGqlWeb.Schema do
     [Absinthe.Middleware.Dataloader] ++ Absinthe.Plugin.defaults()
   end
 
+  def middleware(middlewares, _field, %{identifier: identifier}) when identifier == :query do
+    middlewares ++ [RequestCache.Middleware]
+  end
   def middleware(middlewares, _field, %{identifier: identifier}) when identifier == :mutation do
     middlewares ++ [Middlewares.ChangesetErrors]
   end
