@@ -2,14 +2,10 @@
 
 ## TODO:
   - [x] Web API Speedup
-    - To speed up our API and create a super quick API, we're going to cache all the data we can using the RequestCachePlug library. This [article][1]
-      goes over the RequestCachePlug and why it's useful.
-
-      We will create our own cache to use using Redis, and will need to use our skills from our lessons in Redis to create this Cache which should be used as the default cache for RequestCachePlug 
-      which can be configured either in the config.ex or the middleware for our application. Don't forget that when you have a connection to redis, you have a single process managing the connection, 
-      so we need to address this bottleneck!
-      
   - [ ] Distributed Request Counter
+        On top of this, we're going to change the request counter to work in a distributed environment, using one of the caching strategies we've talked about in the past week. 
+        Figure out the different tradeoffs and leave a comment on why you chose the specific cache style in a module doc of the request counter. 
+        For this cache part Redis and off-server caching isn't allowed.
   - [ ] Caching Telemetry
   - [ ] Testing: Make sure we have testing for our new caching systems
 
