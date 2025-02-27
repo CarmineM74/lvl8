@@ -9,6 +9,8 @@ defmodule CarmineGql.Application do
   end
 
   defp supervised_children(:common) do
+    telemetry_port = String.to_integer(System.get_env("TELEMETRY_PORT") || "4050")
+
     [
       CarmineGqlWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:carmine_gql, :dns_cluster_query) || :ignore},
@@ -16,7 +18,9 @@ defmodule CarmineGql.Application do
       CarmineGql.Repo,
       CarmineGqlWeb.Endpoint,
       {Absinthe.Subscription, CarmineGqlWeb.Endpoint},
-      {PrometheusTelemetry, exporter: [enabled?: true], metrics: CarmineGql.Metrics.metrics()}
+      {PrometheusTelemetry,
+       exporter: [enabled?: true, opts: [port: telemetry_port]],
+       metrics: CarmineGql.Metrics.metrics()}
     ]
   end
 
@@ -28,12 +32,13 @@ defmodule CarmineGql.Application do
 
     supervised_children(:common) ++
       [
+        {Cluster.Supervisor, [topologies, [name: CarmineGql.ClusterSupervisor]]},
         CarmineGql.RedisCache,
+        {DeltaCrdt, [crdt: DeltaCrdt.AWLWWMap, name: :crdt_cache]},
         CarmineGql.GqlRequestStats,
         CarmineGql.AuthTokenCache,
         CarmineGql.AuthTokensPipeline.UsersProducer,
-        CarmineGql.AuthTokensPipeline.UsersConsumerSupervisor,
-        {Cluster.Supervisor, [topologies, [name: CarmineGql.ClusterSupervisor]]}
+        CarmineGql.AuthTokensPipeline.UsersConsumerSupervisor
       ]
   end
 

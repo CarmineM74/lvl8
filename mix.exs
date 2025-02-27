@@ -53,7 +53,8 @@ defmodule CarmineGql.MixProject do
       {:request_cache_plug, "~> 1.0"},
       {:redix, "~> 1.1"},
       {:castore, ">= 0.0.0"},
-      {:poolboy, "~> 1.5"}
+      {:poolboy, "~> 1.5"},
+      {:delta_crdt, "~> 0.6"}
     ]
   end
 
