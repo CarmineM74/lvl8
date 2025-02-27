@@ -19,17 +19,7 @@ defmodule CarmineGql.GqlRequestStats do
 
   def start_link(opts \\ []) do
     name = Keyword.get(opts, :name) || GqlRequestStats
-
-    request_counters =
-      :ets.new(:request_counters, [
-        :named_table,
-        :set,
-        :public,
-        read_concurrency: true,
-        write_concurrency: true
-      ])
-
-    GenServer.start_link(__MODULE__, request_counters, name: name)
+    GenServer.start_link(__MODULE__, [], name: name)
   end
 
   @impl true
@@ -52,9 +42,9 @@ defmodule CarmineGql.GqlRequestStats do
   def get_hit_counter(nil), do: 0
 
   def get_hit_counter(request) when is_binary(request) do
-    case :ets.lookup(:request_counters, request) do
-      [{^request, counter}] -> counter
-      [] -> 0
+    case DeltaCrdt.get(:crdt_cache, request) do
+      nil -> 0
+      counter -> counter
     end
   end
 
@@ -63,6 +53,8 @@ defmodule CarmineGql.GqlRequestStats do
 
   def hit(request)
       when is_binary(request) do
-    :ets.update_counter(:request_counters, request, 1, {request, 0})
+    current_value = get_hit_counter(request)
+    DeltaCrdt.put(:crdt_cache, request, current_value + 1)
+    :ok
   end
 end
