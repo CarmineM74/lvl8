@@ -35,24 +35,73 @@ defmodule CarmineGql.Stress do
   }
   """
 
+  @user_doc """
+    query user($id: ID!) {
+      user(id: $id) {
+      id
+      name
+      email
+      preferences {
+        likesEmails
+        likesFaxes
+        likesPhoneCalls
+        userId
+      }
+    }
+  }
+  """
+
+  @resolver_hits_doc """
+    query resolverHits($key: String!) {
+      resolverHits(key: $key)
+    }
+  """
+
   def stress_gql(iterations \\ 100) do
     Enum.each(1..iterations, fn _ ->
       Process.sleep(:rand.uniform(iterations))
-      op = :rand.uniform(100)
+      op = :rand.uniform(1000)
 
       user = pick_random_user()
 
       cond do
-        is_nil(user) or op < 30 ->
+        is_nil(user) or op < 250 ->
           create_user()
 
-        op < 60 ->
+        op < 400 ->
           update_user_gql(user)
 
-        true ->
+        op < 500 ->
+          fetch_user(user)
+
+        op < 650 ->
           update_user_ecto(user)
+
+        op < 750 ->
+          fetch_user(user)
+        true ->
+          query_counter()
       end
     end)
+  end
+
+  def fetch_user(user) do
+    Absinthe.run(@user_doc, Schema,
+      variables: %{
+        "id" => user.id
+      }
+    )
+  end
+
+  def query_counter() do
+    possible_counters = ["user", "users", "create_user", "update_user", "update_user_preferences"  ]
+    counter = List.first(Enum.shuffle(possible_counters))
+    {:ok, %{data: data}} = Absinthe.run(@resolver_hits_doc, Schema,
+      context: %{},
+      variables: %{
+        "key" => "#{counter}"
+      }
+    )
   end
 
   def pick_random_user() do

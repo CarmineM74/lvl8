@@ -42,10 +42,18 @@ defmodule CarmineGql.GqlRequestStats do
   def get_hit_counter(nil), do: 0
 
   def get_hit_counter(request) when is_binary(request) do
-    case DeltaCrdt.get(:crdt_cache, request) do
-      nil -> 0
-      counter -> counter
+    start = System.monotonic_time()
+    result = case DeltaCrdt.get(:crdt_cache, request) do
+      nil -> 
+        CarmineGql.Metrics.increment_counter_cache_miss()
+        0
+      counter -> 
+        CarmineGql.Metrics.increment_counter_cache_hit()
+        counter
     end
+    duration = System.monotonic_time() - start
+    CarmineGql.Metrics.set_duration_for_counter_cache_get(duration)
+    result
   end
 
   def hit(""), do: :ok
@@ -53,8 +61,11 @@ defmodule CarmineGql.GqlRequestStats do
 
   def hit(request)
       when is_binary(request) do
+    start = System.monotonic_time()
     current_value = get_hit_counter(request)
     DeltaCrdt.put(:crdt_cache, request, current_value + 1)
+    duration = System.monotonic_time() - start
+    CarmineGql.Metrics.set_duration_for_counter_cache_put(duration)
     :ok
   end
 end
