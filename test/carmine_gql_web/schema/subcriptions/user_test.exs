@@ -5,6 +5,7 @@ defmodule CarmineGql.Schema.Subscriptions.UserTest do
   import CarmineGql.Support.UserFixtures
 
   setup do
+    start_supervised!({DeltaCrdt, [crdt: DeltaCrdt.AWLWWMap, name: :crdt_cache]})
     {:ok, _pid} = CarmineGql.GqlRequestStats.start_link(name: nil)
     :ok
   end

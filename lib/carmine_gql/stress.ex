@@ -79,6 +79,7 @@ defmodule CarmineGql.Stress do
 
         op < 750 ->
           fetch_user(user)
+
         true ->
           query_counter()
       end
@@ -94,14 +95,16 @@ defmodule CarmineGql.Stress do
   end
 
   def query_counter() do
-    possible_counters = ["user", "users", "create_user", "update_user", "update_user_preferences"  ]
+    possible_counters = ["user", "users", "create_user", "update_user", "update_user_preferences"]
     counter = List.first(Enum.shuffle(possible_counters))
-    {:ok, %{data: data}} = Absinthe.run(@resolver_hits_doc, Schema,
-      context: %{},
-      variables: %{
-        "key" => "#{counter}"
-      }
-    )
+
+    {:ok, %{data: _ata}} =
+      Absinthe.run(@resolver_hits_doc, Schema,
+        context: %{},
+        variables: %{
+          "key" => "#{counter}"
+        }
+      )
   end
 
   def pick_random_user() do
