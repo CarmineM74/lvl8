@@ -20,5 +20,8 @@ defmodule CarmineGql.Caches.DCrdt do
 
   def get(key), do: DeltaCrdt.get(:crdt_cache, key)
 
-  def put(key, value), do: DeltaCrdt.put(:crdt_cache, key, value)
+  def hit(key) do
+    current_value = get(key) || 0
+    DeltaCrdt.put(:crdt_cache, key, current_value + 1)
+  end
 end

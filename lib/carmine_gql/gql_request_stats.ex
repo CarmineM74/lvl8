@@ -60,8 +60,7 @@ defmodule CarmineGql.GqlRequestStats do
   @impl true
   def handle_cast({:hit, request}, %{cache: cache} = state) do
     start = System.monotonic_time()
-    current_value = fetch_from_cache(cache, request)
-    cache.put(request, current_value + 1)
+    cache.hit(request)
     duration = System.monotonic_time() - start
     CarmineGql.Metrics.set_duration_for_counter_cache_put(duration)
     {:noreply, state}
