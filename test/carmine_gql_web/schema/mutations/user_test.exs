@@ -8,8 +8,7 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
   import CarmineGql.Test.Support, only: [test_failure_with_error: 2]
 
   setup do
-    start_supervised!({DeltaCrdt, [crdt: DeltaCrdt.AWLWWMap, name: :crdt_cache]})
-    {:ok, _pid} = CarmineGql.GqlRequestStats.start_link(name: nil)
+    start_supervised!({CarmineGql.GqlRequestStats, [cache_module: CarmineGql.Caches.DCrdt]})
     :ok
   end
 

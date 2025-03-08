@@ -18,8 +18,8 @@ defmodule CarmineGql.GqlRequestStats do
   """
 
   def start_link(opts \\ []) do
-    name = Keyword.get(opts, :name) || GqlRequestStats
-    GenServer.start_link(__MODULE__, [], name: name)
+    cache = Keyword.get(opts, :cache_module) || CarmineGql.Caches.DCrdt
+    GenServer.start_link(__MODULE__, %{cache: cache}, name: GqlRequestStats)
   end
 
   @impl true
@@ -28,42 +28,54 @@ defmodule CarmineGql.GqlRequestStats do
   end
 
   @impl true
-  def handle_continue(:setup_cache, state) do
-    CarmineGql.Caches.DCrdt.setup() 
+  def handle_continue(:setup_cache, %{cache: cache} = state) do
+    cache.setup()
     {:noreply, state}
   end
 
   def get_hit_counter(nil), do: 0
 
-  def get_hit_counter(request) when is_binary(request) do
-    start = System.monotonic_time()
-
-    result =
-      case CarmineGql.Caches.DCrdt.get(request) do
-        nil ->
-          CarmineGql.Metrics.increment_counter_cache_miss()
-          0
-
-        counter ->
-          CarmineGql.Metrics.increment_counter_cache_hit()
-          counter
-      end
-
-    duration = System.monotonic_time() - start
-    CarmineGql.Metrics.set_duration_for_counter_cache_get(duration)
-    result
-  end
+  def get_hit_counter(request) when is_binary(request),
+    do: GenServer.call(GqlRequestStats, {:get, request})
 
   def hit(""), do: :ok
   def hit(nil), do: :ok
 
   def hit(request)
       when is_binary(request) do
+    GenServer.cast(GqlRequestStats, {:hit, request})
+  end
+
+  @impl true
+  def handle_call({:get, request}, _from, %{cache: cache} = state) do
     start = System.monotonic_time()
-    current_value = get_hit_counter(request)
-    CarmineGql.Caches.DCrdt.put(request, current_value + 1)
+
+    result = fetch_from_cache(cache, request)
+    duration = System.monotonic_time() - start
+
+    CarmineGql.Metrics.set_duration_for_counter_cache_get(duration)
+    {:reply, result, state}
+  end
+
+  @impl true
+  def handle_cast({:hit, request}, %{cache: cache} = state) do
+    start = System.monotonic_time()
+    current_value = fetch_from_cache(cache, request)
+    cache.put(request, current_value + 1)
     duration = System.monotonic_time() - start
     CarmineGql.Metrics.set_duration_for_counter_cache_put(duration)
-    :ok
+    {:noreply, state}
+  end
+
+  defp fetch_from_cache(cache, request) do
+    case cache.get(request) do
+      nil ->
+        CarmineGql.Metrics.increment_counter_cache_miss()
+        0
+
+      counter ->
+        CarmineGql.Metrics.increment_counter_cache_hit()
+        counter
+    end
   end
 end

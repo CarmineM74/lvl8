@@ -4,8 +4,7 @@ defmodule CarmineGql.GqlRequestStatsTest do
   alias CarmineGql.GqlRequestStats
 
   setup do
-    start_supervised!({DeltaCrdt, [crdt: DeltaCrdt.AWLWWMap, name: :crdt_cache]})
-    {:ok, _pid} = CarmineGql.GqlRequestStats.start_link(name: nil)
+    start_supervised!({CarmineGql.GqlRequestStats, [cache_module: CarmineGql.Caches.DCrdt]})
     :ok
   end
 
@@ -60,26 +59,14 @@ defmodule CarmineGql.GqlRequestStatsTest do
   end
 
   describe "counter caching" do
-    test "When counter has no hits Cache has no corresponding key" do
+    test "When counter has no hits Cache returns 0" do
       assert 0 === GqlRequestStats.get_hit_counter("cache_hits")
-      cache_map = DeltaCrdt.to_map(:crdt_cache)
-      refute Map.has_key?(cache_map, "cache_hits")
     end
 
-    test "Hitting a counter adds the key to the cache" do
-      GqlRequestStats.hit("cache_hits")
-      cache_map = DeltaCrdt.to_map(:crdt_cache)
-      assert Map.has_key?(cache_map, "cache_hits")
-    end
-
-    @tag :wip
     test "Hitting a counter updates the cached value" do
       assert 0 === GqlRequestStats.get_hit_counter("cache_hits")
-      cache_map = DeltaCrdt.to_map(:crdt_cache)
-      refute Map.has_key?(cache_map, "cache_hits")
       GqlRequestStats.hit("cache_hits")
-      cache_map = DeltaCrdt.to_map(:crdt_cache)
-      assert 1 === Map.get(cache_map, "cache_hits")
+      assert 1 === GqlRequestStats.get_hit_counter("cache_hits")
     end
   end
 end

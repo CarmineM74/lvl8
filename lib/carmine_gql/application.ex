@@ -34,7 +34,6 @@ defmodule CarmineGql.Application do
       [
         {Cluster.Supervisor, [topologies, [name: CarmineGql.ClusterSupervisor]]},
         CarmineGql.RedisCache,
-        {DeltaCrdt, [crdt: DeltaCrdt.AWLWWMap, name: :crdt_cache]},
         CarmineGql.GqlRequestStats,
         CarmineGql.AuthTokenCache,
         CarmineGql.AuthTokensPipeline.UsersProducer,
