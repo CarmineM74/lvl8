@@ -4,7 +4,7 @@ defmodule CarmineGql.Caches.DCrdt do
   def setup() do
     Logger.debug("[Setup CRDT cache]")
 
-    {:ok, pid} = DeltaCrdt.start_link(DeltaCrdt.AWLWWMap, name: :crdt_cache)
+    DeltaCrdt.start_link(DeltaCrdt.AWLWWMap, name: :crdt_cache)
 
     nodes = Node.list()
 
@@ -15,7 +15,7 @@ defmodule CarmineGql.Caches.DCrdt do
       Enum.each(remote_crdt_caches, &DeltaCrdt.set_neighbours(&1, [local_crdt_cache]))
     end
 
-    {:ok, pid}
+    :ok
   end
 
   def get(key), do: DeltaCrdt.get(:crdt_cache, key)

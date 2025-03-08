@@ -1,5 +1,5 @@
 defmodule CarmineGql.GqlRequestStats do
-  use GenServer
+  use Agent
 
   require Logger
   alias __MODULE__
@@ -19,51 +19,39 @@ defmodule CarmineGql.GqlRequestStats do
 
   def start_link(opts \\ []) do
     cache = Keyword.get(opts, :cache_module) || CarmineGql.Caches.DCrdt
-    GenServer.start_link(__MODULE__, %{cache: cache}, name: GqlRequestStats)
-  end
 
-  @impl true
-  def init(init_state) do
-    {:ok, init_state, {:continue, :setup_cache}}
-  end
-
-  @impl true
-  def handle_continue(:setup_cache, %{cache: cache} = state) do
-    cache.setup()
-    {:noreply, state}
+    Agent.start_link(
+      fn ->
+        cache.setup()
+        %{cache: cache}
+      end,
+      name: GqlRequestStats
+    )
   end
 
   def get_hit_counter(nil), do: 0
 
-  def get_hit_counter(request) when is_binary(request),
-    do: GenServer.call(GqlRequestStats, {:get, request})
-
-  def hit(""), do: :ok
-  def hit(nil), do: :ok
-
-  def hit(request)
-      when is_binary(request) do
-    GenServer.cast(GqlRequestStats, {:hit, request})
-  end
-
-  @impl true
-  def handle_call({:get, request}, _from, %{cache: cache} = state) do
+  def get_hit_counter(request) when is_binary(request) do
+    cache = Agent.get(GqlRequestStats, fn %{cache: cache} -> cache end)
     start = System.monotonic_time()
 
     result = fetch_from_cache(cache, request)
     duration = System.monotonic_time() - start
 
     CarmineGql.Metrics.set_duration_for_counter_cache_get(duration)
-    {:reply, result, state}
+    result
   end
 
-  @impl true
-  def handle_cast({:hit, request}, %{cache: cache} = state) do
+  def hit(""), do: :ok
+  def hit(nil), do: :ok
+
+  def hit(request)
+      when is_binary(request) do
+    cache = Agent.get(GqlRequestStats, fn %{cache: cache} -> cache end)
     start = System.monotonic_time()
     cache.hit(request)
     duration = System.monotonic_time() - start
     CarmineGql.Metrics.set_duration_for_counter_cache_put(duration)
-    {:noreply, state}
   end
 
   defp fetch_from_cache(cache, request) do

@@ -54,7 +54,8 @@ defmodule CarmineGql.MixProject do
       {:redix, "~> 1.1"},
       {:castore, ">= 0.0.0"},
       {:poolboy, "~> 1.5"},
-      {:delta_crdt, "~> 0.6"}
+      {:delta_crdt, "~> 0.6"},
+      {:horde, "~> 0.9.0"}
     ]
   end
 
