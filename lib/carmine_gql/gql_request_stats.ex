@@ -24,21 +24,12 @@ defmodule CarmineGql.GqlRequestStats do
 
   @impl true
   def init(init_state) do
-    {:ok, init_state, {:continue, :setup_crdt_cache}}
+    {:ok, init_state, {:continue, :setup_cache}}
   end
 
   @impl true
-  def handle_continue(:setup_crdt_cache, state) do
-    Logger.debug("[Setup CRDT cache]")
-    nodes = Node.list()
-
-    if Enum.any?(nodes) do
-      remote_crdt_caches = Enum.map(nodes, &{:crdt_cache, &1})
-      local_crdt_cache = Process.whereis(:crdt_cache)
-      DeltaCrdt.set_neighbours(:crdt_cache, remote_crdt_caches)
-      Enum.each(remote_crdt_caches, &DeltaCrdt.set_neighbours(&1, [local_crdt_cache]))
-    end
-
+  def handle_continue(:setup_cache, state) do
+    CarmineGql.Caches.DCrdt.setup() 
     {:noreply, state}
   end
 
@@ -48,7 +39,7 @@ defmodule CarmineGql.GqlRequestStats do
     start = System.monotonic_time()
 
     result =
-      case DeltaCrdt.get(:crdt_cache, request) do
+      case CarmineGql.Caches.DCrdt.get(request) do
         nil ->
           CarmineGql.Metrics.increment_counter_cache_miss()
           0
@@ -70,7 +61,7 @@ defmodule CarmineGql.GqlRequestStats do
       when is_binary(request) do
     start = System.monotonic_time()
     current_value = get_hit_counter(request)
-    DeltaCrdt.put(:crdt_cache, request, current_value + 1)
+    CarmineGql.Caches.DCrdt.put(request, current_value + 1)
     duration = System.monotonic_time() - start
     CarmineGql.Metrics.set_duration_for_counter_cache_put(duration)
     :ok
