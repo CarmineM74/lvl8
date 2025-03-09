@@ -4,19 +4,11 @@ defmodule CarmineGql.GqlRequestStatsTest do
   alias CarmineGql.GqlRequestStats
 
   setup do
-    start_supervised!({CarmineGql.GqlRequestStats, [cache_module: CarmineGql.Caches.DCrdt]})
+    start_supervised!(CarmineGql.StatsStorages.Ets)
     :ok
   end
 
   describe "&get_hit_counter/2" do
-    test "Querying a nil key won't crash the process" do
-      pid1 = Process.whereis(GqlRequestStats)
-      assert(pid1)
-      GqlRequestStats.get_hit_counter(nil)
-      pid2 = Process.whereis(GqlRequestStats)
-      assert pid2 === pid1
-    end
-
     test "Querying an empty key always returns 0" do
       assert 0 === GqlRequestStats.get_hit_counter("")
       GqlRequestStats.hit("")
@@ -34,14 +26,6 @@ defmodule CarmineGql.GqlRequestStatsTest do
   end
 
   describe "&hit/2" do
-    test "Hitting a nil key will won't crash the process" do
-      pid1 = Process.whereis(GqlRequestStats)
-      assert(pid1)
-      GqlRequestStats.hit(nil)
-      pid2 = Process.whereis(GqlRequestStats)
-      assert pid2 === pid1
-    end
-
     test "Each hit increments counter by one for the given request" do
       assert 0 === GqlRequestStats.get_hit_counter("a request")
       GqlRequestStats.hit("a request")

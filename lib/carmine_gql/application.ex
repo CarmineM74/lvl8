@@ -29,12 +29,13 @@ defmodule CarmineGql.Application do
 
   defp supervised_children(_other) do
     topologies = Application.get_env(:libcluster, :topologies)
+    stats_storage = Application.get_env(:carmine_gql, :stats_storage)
 
     supervised_children(:common) ++
       [
         {Cluster.Supervisor, [topologies, [name: CarmineGql.ClusterSupervisor]]},
         CarmineGql.RedisCache,
-        {CarmineGql.GqlRequestStats, [cache_module: CarmineGql.Caches.DCrdt]},
+        stats_storage,
         CarmineGql.AuthTokenCache,
         CarmineGql.AuthTokensPipeline.UsersProducer,
         CarmineGql.AuthTokensPipeline.UsersConsumerSupervisor

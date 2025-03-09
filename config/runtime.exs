@@ -50,6 +50,9 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  config :carmine_gql, auth_token_ttl: 20
+  config :carmine_gql, users_consumer_max_demand: 2
+  config :carmine_gql, stats_storage: CarmineGql.StatsStorages.DCrdt
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

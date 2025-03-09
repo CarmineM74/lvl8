@@ -19,3 +19,7 @@ config :carmine_gql, CarmineGql.Repo,
   password: "postgres",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
+
+config :carmine_gql, auth_token_ttl: 20
+config :carmine_gql, users_consumer_max_demand: 2
+config :carmine_gql, stats_storage: CarmineGql.StatsStorages.Ets
