@@ -8,7 +8,7 @@ defmodule CarmineGqlWeb.Schema.Mutations.UserTest do
   import CarmineGql.Test.Support, only: [test_failure_with_error: 2]
 
   setup do
-    start_supervised!({CarmineGql.GqlRequestStats, [cache_module: CarmineGql.Caches.DCrdt]})
+    start_supervised!(CarmineGql.StatsStorages.Ets)
     :ok
   end
 

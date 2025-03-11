@@ -5,7 +5,7 @@ defmodule CarmineGql.Schema.Subscriptions.UserTest do
   import CarmineGql.Support.UserFixtures
 
   setup do
-    start_supervised!({CarmineGql.GqlRequestStats, [cache_module: CarmineGql.Caches.DCrdt]})
+    start_supervised!(CarmineGql.StatsStorages.Ets)
     :ok
   end
 
