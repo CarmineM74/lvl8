@@ -24,7 +24,7 @@ config :carmine_gql, dev_routes: true
 
 config :carmine_gql, auth_token_ttl: 20
 config :carmine_gql, users_consumer_max_demand: 2
-config :carmine_gql, stats_storage: CarmineGql.StatsStorages.DCrdt
+config :carmine_gql, stats_storage: CarmineGql.StatsStorages.Singleton
 
 config :logger, :console, format: "$time $metadata[$level] $message\n"
 

@@ -1,11 +1,19 @@
 defmodule CarmineGql.Application do
+  require Logger
   use Application
 
   @impl true
   def start(_type, _args) do
     children = supervised_children(Mix.env())
     opts = [strategy: :one_for_one, name: CarmineGql.Supervisor]
-    Supervisor.start_link(children, opts)
+    res = Supervisor.start_link(children, opts)
+    stats_storage = Application.get_env(:carmine_gql, :stats_storage)
+    Logger.debug("STATS STORAGE: #{inspect(stats_storage)}")
+
+    if stats_storage === CarmineGql.StatsStorages.Singleton,
+      do: Horde.DynamicSupervisor.start_child(CarmineGql.HSupervisor, stats_storage)
+
+    res
   end
 
   defp supervised_children(:common) do
@@ -27,15 +35,37 @@ defmodule CarmineGql.Application do
   defp supervised_children(:test),
     do: supervised_children(:common)
 
+  defp supervised_children(:cache) do
+    stats_storage = Application.get_env(:carmine_gql, :stats_storage)
+
+    [
+      CarmineGql.RedisCache
+    ] ++
+      if stats_storage === CarmineGql.StatsStorages.Singleton do
+        [
+          {Horde.Registry, [name: CarmineGql.HRegistry, keys: :unique, members: :auto]},
+          {Horde.DynamicSupervisor,
+           [
+             name: CarmineGql.HSupervisor,
+             strategy: :one_for_one,
+             members: :auto,
+             distribution_strategy: Horde.UniformQuorumDistribution
+           ]}
+        ]
+      else
+        [stats_storage]
+      end
+  end
+
   defp supervised_children(_other) do
     topologies = Application.get_env(:libcluster, :topologies)
-    stats_storage = Application.get_env(:carmine_gql, :stats_storage)
 
     supervised_children(:common) ++
       [
-        {Cluster.Supervisor, [topologies, [name: CarmineGql.ClusterSupervisor]]},
-        CarmineGql.RedisCache,
-        stats_storage,
+        {Cluster.Supervisor, [topologies, [name: CarmineGql.ClusterSupervisor]]}
+      ] ++
+      supervised_children(:cache) ++
+      [
         CarmineGql.AuthTokenCache,
         CarmineGql.AuthTokensPipeline.UsersProducer,
         CarmineGql.AuthTokensPipeline.UsersConsumerSupervisor
