@@ -9,9 +9,9 @@
   - [x] Caching Telemetry
         Make sure we use our prometheus skills to add in telemetry for whatever caching form we choose. 
         Potentially measuring times for get/put as well as count.
-  - [ ] Testing: Make sure we have testing for our new caching systems
+  - [x] Testing: Make sure we have testing for our new caching systems
 
-  - **Optional**: For extra credit you can try implementing a Singleton Cache that would be accessed in a distributed environment (meaning one node has the data and the rest pull it from that node, think about how you select which node holds the data), use this for the Distributed Request Counter
+  - [x] **Optional**: For extra credit you can try implementing a Singleton Cache that would be accessed in a distributed environment (meaning one node has the data and the rest pull it from that node, think about how you select which node holds the data), use this for the Distributed Request Counter
 
 ### Notes
 
