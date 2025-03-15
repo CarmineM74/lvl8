@@ -6,14 +6,18 @@ defmodule CarmineGql.Application do
   def start(_type, _args) do
     children = supervised_children(Mix.env())
     opts = [strategy: :one_for_one, name: CarmineGql.Supervisor]
-    res = Supervisor.start_link(children, opts)
-    stats_storage = Application.get_env(:carmine_gql, :stats_storage)
-    Logger.debug("STATS STORAGE: #{inspect(stats_storage)}")
 
-    if stats_storage === CarmineGql.StatsStorages.Singleton,
-      do: Horde.DynamicSupervisor.start_child(CarmineGql.HSupervisor, stats_storage)
+    Supervisor.start_link(children, opts)
+    |> then(fn {:ok, sup} ->
+      if Application.get_env(:carmine_gql, :stats_storage) === CarmineGql.StatsStorages.Singleton,
+        do:
+          Horde.DynamicSupervisor.start_child(
+            CarmineGql.HSupervisor,
+            CarmineGql.StatsStorages.Singleton
+          )
 
-    res
+      {:ok, sup}
+    end)
   end
 
   defp supervised_children(:common) do
@@ -38,23 +42,20 @@ defmodule CarmineGql.Application do
   defp supervised_children(:cache) do
     stats_storage = Application.get_env(:carmine_gql, :stats_storage)
 
-    [
-      CarmineGql.RedisCache
-    ] ++
-      if stats_storage === CarmineGql.StatsStorages.Singleton do
-        [
-          {Horde.Registry, [name: CarmineGql.HRegistry, keys: :unique, members: :auto]},
-          {Horde.DynamicSupervisor,
-           [
-             name: CarmineGql.HSupervisor,
-             strategy: :one_for_one,
-             members: :auto,
-             distribution_strategy: Horde.UniformQuorumDistribution
-           ]}
-        ]
-      else
-        [stats_storage]
-      end
+    if stats_storage === CarmineGql.StatsStorages.Singleton do
+      [
+        {Horde.Registry, [name: CarmineGql.HRegistry, keys: :unique, members: :auto]},
+        {Horde.DynamicSupervisor,
+         [
+           name: CarmineGql.HSupervisor,
+           strategy: :one_for_one,
+           members: :auto,
+           distribution_strategy: Horde.UniformQuorumDistribution
+         ]}
+      ]
+    else
+      [stats_storage]
+    end
   end
 
   defp supervised_children(_other) do
@@ -62,7 +63,8 @@ defmodule CarmineGql.Application do
 
     supervised_children(:common) ++
       [
-        {Cluster.Supervisor, [topologies, [name: CarmineGql.ClusterSupervisor]]}
+        {Cluster.Supervisor, [topologies, [name: CarmineGql.ClusterSupervisor]]},
+        CarmineGql.RedisCache
       ] ++
       supervised_children(:cache) ++
       [
